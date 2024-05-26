@@ -1,44 +1,63 @@
 import { Request, Response } from "express-serve-static-core";
-import { EMAIL_IN_USE } from '../constants';
+import {
+  EMAIL_IN_USE,
+  CREATE_USER_ERROR_TYPE,
+  EMAIL_NOT_VALID,
+  PASSWORD_NOT_VALID
+} from '../constants';
+import { emailSchema, passwordSchema } from '../validation';
+import { UserT } from '../types';
+import { mockUsers } from '../mockData';
 
-const users = [
-  { id: 1, email: "user1@gmail.com", password: "password 1" },
-  { id: 2, email: "user2@gmail.com", password: "password 2" }
-];
 
 export const createUser = (req: Request, res: Response) => {
   const { body: { email, password } } = req;
-  console.log(`email ${email}, password ${password}`);
-  
-  // TODO: validation with zod
-  // for now let's just assume payload is valid
-  if (email === undefined || password === undefined) {
-    return res.sendStatus(400);
+
+  const { error: emailError, data: parsedEmail } = emailSchema.safeParse(email);
+  const { error: passwordError, data: parsedPassword } = passwordSchema.safeParse(password);
+
+  if (emailError) {
+    return res.status(400).json({
+      type: CREATE_USER_ERROR_TYPE,
+      massage: {
+        email: EMAIL_NOT_VALID
+      }
+    });
+  }
+
+  if (passwordError) {
+    return res.status(400).json({
+      type: CREATE_USER_ERROR_TYPE,
+      massage: {
+        password: PASSWORD_NOT_VALID
+      }
+    });
   }
 
   // TODO: try/cache save to db and handle 400 if email is not unique
-  const findUserIndexByEmail = users.findIndex(
-    (user) => user.email === email
+  const findUserIndexByEmail = mockUsers.findIndex(
+    (user) => user.email === parsedEmail
   );
 
   if (findUserIndexByEmail >= 0) {
     return res.status(400).json({
+      type: CREATE_USER_ERROR_TYPE,
       message: {
         email: EMAIL_IN_USE
       }
     });
   }
 
-  const newUser = {
-    id: users[users.length - 1].id + 1,
-    email: email,
-    password: password
+  const newUser: UserT = {
+    id: mockUsers[mockUsers.length - 1].id + 1,
+    email: parsedEmail,
+    password: parsedPassword
   };
 
-  users.push(newUser);
+  mockUsers.push(newUser);
   res.sendStatus(201);
 };
 
 export const getUsers = (req: Request, res: Response) => {
-  res.status(200).send(users);
+  res.status(200).send(mockUsers);
 };
