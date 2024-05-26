@@ -1,4 +1,5 @@
 import { Request, Response } from "express-serve-static-core";
+import { PrismaClient } from '@prisma/client';
 import {
   EMAIL_IN_USE,
   CREATE_USER_ERROR_TYPE,
@@ -59,5 +60,22 @@ export const createUser = (req: Request, res: Response) => {
 };
 
 export const getUsers = (req: Request, res: Response) => {
-  res.status(200).send(mockUsers);
+  const prisma = new PrismaClient();
+
+  async function main() {
+    const allUsers = await prisma.user.findMany();
+    console.log(`allUsers: ${allUsers}`);
+  }
+
+  main()
+    .then(async () => {
+      await prisma.$disconnect()
+    })
+    .catch(async (e) => {
+      console.error(e)
+      await prisma.$disconnect()
+      process.exit(1)
+    });
+
+    res.status(200).send(mockUsers);
 };
