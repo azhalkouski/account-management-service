@@ -1,5 +1,6 @@
 import { Request, Response } from "express-serve-static-core";
 import { PrismaClient, Prisma } from '@prisma/client';
+import { hashPassword } from '../utils';
 import {
   EMAIL_IN_USE,
   CREATE_USER_ERROR_TYPE,
@@ -65,7 +66,7 @@ export const createUser = async (req: Request, res: Response) => {
 
     const newUser: CreateUserT = {
       email: parsedEmail,
-      password: parsedPassword,
+      password: hashPassword(parsedPassword),
       name: 'Human',
       document: 'djkshgskljgh',
       birth_date: new Date(1995, 3, 21)
