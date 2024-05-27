@@ -5,7 +5,8 @@ import {
   EMAIL_IN_USE,
   CREATE_USER_ERROR_TYPE,
   EMAIL_NOT_VALID,
-  PASSWORD_NOT_VALID
+  PASSWORD_NOT_VALID,
+  USER_DOCUMENT_IN_USE
 } from '../constants';
 import { emailSchema, passwordSchema } from '../validation';
 import { CreateUserT, UserT } from '../types';
@@ -77,8 +78,26 @@ export const createUser = async (req: Request, res: Response) => {
   } catch (e) {
     console.error(e)
     if (isPrismaClientKnownRequestError(e) && e.code === 'P2002') {
-      // throws when DOCUMENT_IN_USE
-      // TODO: dynamic err msg for broken constraints besids `email`
+      const modelName = e.meta?.modelName;
+      const modelTarget = Array.isArray(e.meta?.target) ? e.meta?.target : [];
+
+      if (e.meta?.target && !Array.isArray(e.meta?.target)) {
+        // log in case it is not an array due to lack of static type defined on
+        // Prisma Client
+        console.log(`Target is not array but ${JSON.stringify(e.meta?.target)}`);
+      }
+
+      if (modelTarget.includes('document')) {
+        return res.status(400).json({
+          type: CREATE_USER_ERROR_TYPE,
+          message: {
+            email: USER_DOCUMENT_IN_USE
+          }
+        });
+      } else {
+        console.error(`Error on POST /users - modelName: ${modelName} - target field: ${modelTarget}`);
+      }
+
       return res.sendStatus(400);
     }
 
