@@ -110,6 +110,8 @@ export const createUser = async (req: Request, res: Response) => {
 export const getUsers = async (req: Request, res: Response) => {
   const prisma = new PrismaClient();
 
+  // TODO: passport
+
   try {
     const allUsers: UserT[] = await prisma.user.findMany();
     res.status(200).send(allUsers);
