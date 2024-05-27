@@ -68,7 +68,7 @@ export const createUser = async (req: Request, res: Response) => {
       email: parsedEmail,
       password: hashPassword(parsedPassword),
       name: 'Human',
-      document: 'djkshgskljgh',
+      document: (Math.round(Math.random() * 100000000)).toString(),
       birth_date: new Date(1995, 3, 21)
     };
 
