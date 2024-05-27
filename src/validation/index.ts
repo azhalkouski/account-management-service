@@ -11,8 +11,16 @@ export const passwordSchema = z.string()
   .refine((value) => /[0-9]/.test(value), { message: "Password must contain at least one number" })
   .refine((value) => /[!@#$%^&*(),.?":{}|<>]/.test(value), { message: "Password must contain at least one special character" });
 
-export const userSchema = z.object({
-  id: z.number(),
+const baseUserSchema = z.object({
   email: emailSchema,
-  password: passwordSchema
+  password: passwordSchema,
+  name: z.string(),
+  document: z.string(),
+  birth_date: z.date()
 });
+
+export const createUserSchema = baseUserSchema.extend({});
+
+export const userSchema = baseUserSchema.extend({
+  id: z.number()
+})
