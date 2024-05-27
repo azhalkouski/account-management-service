@@ -1,5 +1,5 @@
 import { Request, Response } from "express-serve-static-core";
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import {
   EMAIL_IN_USE,
   CREATE_USER_ERROR_TYPE,
@@ -7,12 +7,23 @@ import {
   PASSWORD_NOT_VALID
 } from '../constants';
 import { emailSchema, passwordSchema } from '../validation';
-import { UserT } from '../types';
-import { mockUsers } from '../mockData';
+import { CreateUserT, UserT } from '../types';
+
+function isPrismaClientKnownRequestError(
+  error: unknown
+): error is Prisma.PrismaClientKnownRequestError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    'clientVersion' in error
+  );
+}
 
 
-export const createUser = (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response) => {
   const { body: { email, password } } = req;
+  const prisma = new PrismaClient();
 
   const { error: emailError, data: parsedEmail } = emailSchema.safeParse(email);
   const { error: passwordError, data: parsedPassword } = passwordSchema.safeParse(password);
@@ -35,47 +46,57 @@ export const createUser = (req: Request, res: Response) => {
     });
   }
 
-  // TODO: try/cache save to db and handle 400 if email is not unique
-  const findUserIndexByEmail = mockUsers.findIndex(
-    (user) => user.email === parsedEmail
-  );
-
-  if (findUserIndexByEmail >= 0) {
-    return res.status(400).json({
-      type: CREATE_USER_ERROR_TYPE,
-      message: {
-        email: EMAIL_IN_USE
-      }
+  try {
+    const user: UserT | null = await prisma.user.findFirst({
+      where: {
+        email: email,
+      },
     });
+
+    if (user) {
+      console.log('User with email already exists:', user);
+      return res.status(400).json({
+        type: CREATE_USER_ERROR_TYPE,
+        message: {
+          email: EMAIL_IN_USE
+        }
+      });
+    }
+
+    const newUser: CreateUserT = {
+      email: parsedEmail,
+      password: parsedPassword,
+      name: 'Human',
+      document: 'djkshgskljgh',
+      birth_date: new Date(1995, 3, 21)
+    };
+
+    await prisma.user.create({ data: newUser });
+    res.sendStatus(201);
+  } catch (e) {
+    console.error(e)
+    if (isPrismaClientKnownRequestError(e) && e.code === 'P2002') {
+      // throws when DOCUMENT_IN_USE
+      // TODO: dynamic err msg for broken constraints besids `email`
+      return res.sendStatus(400);
+    }
+
+    res.sendStatus(500);
+  } finally {
+    await prisma.$disconnect()
   }
-
-  const newUser: UserT = {
-    id: mockUsers[mockUsers.length - 1].id + 1,
-    email: parsedEmail,
-    password: parsedPassword
-  };
-
-  mockUsers.push(newUser);
-  res.sendStatus(201);
 };
 
-export const getUsers = (req: Request, res: Response) => {
+export const getUsers = async (req: Request, res: Response) => {
   const prisma = new PrismaClient();
 
-  async function main() {
-    const allUsers = await prisma.user.findMany();
-    console.log(`allUsers: ${allUsers}`);
+  try {
+    const allUsers: UserT[] = await prisma.user.findMany();
+    res.status(200).send(allUsers);
+    await prisma.$disconnect()
+  } catch (e) {
+    console.error(e)
+    await prisma.$disconnect()
+    res.sendStatus(500);
   }
-
-  main()
-    .then(async () => {
-      await prisma.$disconnect()
-    })
-    .catch(async (e) => {
-      console.error(e)
-      await prisma.$disconnect()
-      process.exit(1)
-    });
-
-    res.status(200).send(mockUsers);
 };
