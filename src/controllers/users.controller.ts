@@ -8,8 +8,8 @@ import {
   PASSWORD_NOT_VALID,
   USER_DOCUMENT_IN_USE
 } from '../constants';
-import { emailSchema, passwordSchema } from '../validation';
-import { CreateUserT, UserT } from '../types';
+import { emailSchema, passwordSchema } from '../models/validation';
+import { CreateUserT, UserT } from '../types/index';
 
 function isPrismaClientKnownRequestError(
   error: unknown
