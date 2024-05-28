@@ -111,6 +111,10 @@ export const getUsers = async (req: Request, res: Response) => {
   const prisma = new PrismaClient();
 
   // TODO: passport
+  // @ts-ignore
+  if (!req.session.userIsAuthenticated) {
+    return res.sendStatus(401);
+  }
 
   try {
     const allUsers: UserT[] = await prisma.user.findMany();

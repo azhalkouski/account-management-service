@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getUsers, createUser } from './users'; // so... are these controllers? and then a controller uses services?
-import { authenticateUser } from './auth';
+import { getUsers, createUser } from '../controllers/users.controller'; // so... are these controllers? and then a controller uses services?
+import { authenticateUser } from '../controllers/auth.controller';
 
 const router = Router();
 
