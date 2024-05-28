@@ -11,8 +11,6 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
       return res.sendStatus(401);
     }
 
-    // @ts-ignore
-    req.session.userIsAuthenticated = true;
     res.sendStatus(200);
   } catch (e) {
     // TODO: winston.log(e)
