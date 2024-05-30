@@ -3,13 +3,16 @@ import { PrismaClient } from '@prisma/client';
 import { UserT } from '../types/index';
 import { comparePassword } from '../utils';
 
-// services are just functions that can throw errors
-// no try/catch on this level
-export const authenticate = async (email?: string, password?: string): Promise<boolean> => {
+export interface UserShortcutT {
+  id: string,
+  email: string
+};
+
+export const findUserByEmailAndPassword = async (email?: string, password?: string): Promise<UserShortcutT | null> => {
   const prisma = new PrismaClient();
 
   if(!email || !password) {
-    return false;
+    return null;
   }
 
   const user: UserT | null = await prisma.user.findFirst({
@@ -19,13 +22,18 @@ export const authenticate = async (email?: string, password?: string): Promise<b
   });
 
   if (!user) {
-    return false;
+    return null;
   }
 
   const isPasswordMatch = comparePassword(password, user.password);
   if (!isPasswordMatch) {
-    return false;
+    return null;
   }
 
-  return true;
+  const UserShortcut: UserShortcutT = {
+    id: user.id.toString(),
+    email: user.email
+  }
+
+  return UserShortcut;
 }
