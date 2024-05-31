@@ -20,4 +20,25 @@ model User {
   name         String
   document     String     @unique
   birth_date   DateTime
+  accounts     Account[]
+}
+
+model Account {
+  id                     Int      @id @default(autoincrement())
+  user                   User     @relation(fields: [person_id], references: [id], onDelete: Restrict)
+  person_id              Int
+  balance                Decimal  @db.Decimal(10, 2) @default(0.00)
+  daily_withdrawal_limit Decimal  @db.Decimal(10, 2)
+  active                 Boolean  @default(false)
+  account_type           Int
+  create_date            DateTime @default(now())
+  transactions           Transaction[]
+}
+
+model Transaction {
+  id               Int      @id @default(autoincrement())
+  account          Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  account_id       Int
+  value            Decimal  @db.Decimal(10, 2)
+  transaction_date DateTime @default(now())
 }
