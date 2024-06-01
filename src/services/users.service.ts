@@ -8,12 +8,8 @@ export interface UserShortcutT {
   email: string
 };
 
-export const findUserByEmailAndPassword = async (email?: string, password?: string): Promise<UserShortcutT | null> => {
+export const findUserByEmailAndPassword = async (email: string, password: string): Promise<UserShortcutT | null> => {
   const prisma = new PrismaClient();
-
-  if(!email || !password) {
-    return null;
-  }
 
   const user: UserT | null = await prisma.user.findFirst({
     where: {
@@ -33,7 +29,31 @@ export const findUserByEmailAndPassword = async (email?: string, password?: stri
   const UserShortcut: UserShortcutT = {
     id: user.id.toString(),
     email: user.email
-  }
+  };
 
   return UserShortcut;
+};
+
+export const getAllUsers = async (): Promise<UserT[]> => {
+  const prisma = new PrismaClient();
+  const allUsers: UserT[] = await prisma.user.findMany();
+
+  return allUsers;
 }
+
+export const findUserByUserId = async (id: number) => {
+  const prisma = new PrismaClient();
+  const user: UserT | null = await prisma.user.findFirst({
+    where: {
+      id: id,
+    }
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  const { password, ...restUser } = user;
+
+  return restUser;
+};
