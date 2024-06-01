@@ -31,6 +31,6 @@ const validateCredentials = (req: Request, res: Response, next: NextFunction) =>
   }
 
   next();
-}
+};
 
 export default validateCredentials;

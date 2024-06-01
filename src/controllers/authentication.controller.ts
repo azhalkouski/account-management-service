@@ -32,8 +32,10 @@ function isPrismaClientKnownRequestError(
 
 export const signIn = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // TODO: add zod validation middleware
     const { body: { email, password } } = req;
 
+    // TODO: integration test: call this route and make sure that 400 sent on bad request body
     const user: UserShortcutT | null = await findUserByEmailAndPassword(email, password);
 
     if (!user) {
@@ -51,7 +53,7 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
     console.error(e);
     res.sendStatus(500);
   }
-}
+};
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   const prisma = new PrismaClient();
@@ -96,7 +98,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     res.sendStatus(201);
 
   } catch (e) {
-    console.error(e)
+    console.error(e);
     // TODO: winston.log(e)
     // TODO: next(e)
 
@@ -106,9 +108,9 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
     res.sendStatus(500);
   } finally {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   }
-}
+};
 
 function handlePrismaClientKnownRequestError(e: Prisma.PrismaClientKnownRequestError, res: Response) {
   const modelName = e.meta?.modelName;

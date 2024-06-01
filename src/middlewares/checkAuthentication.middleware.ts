@@ -12,7 +12,7 @@ passport.use(new Strategy(strategyOptions, function(jwtPayload, done) {
   const user = {
     id: jwtPayload.id,
     email: jwtPayload.email,
-  }
+  };
 
   done(null, user);
 }));
@@ -34,6 +34,6 @@ const checkAuthenticationMiddleware = (whiteList: string[]) => (
     next();
   }
 
-}
+};
 
 export default checkAuthenticationMiddleware;

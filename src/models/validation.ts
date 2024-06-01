@@ -23,4 +23,4 @@ export const createUserSchema = baseUserSchema.extend({});
 
 export const userSchema = baseUserSchema.extend({
   id: z.number()
-})
+});
