@@ -8,6 +8,7 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Update not allowed on blocked account';
   END IF;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
