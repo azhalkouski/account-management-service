@@ -57,12 +57,14 @@ export const blockAccount = async (accountId: number) => {
   // TODO: implement prisma.account.updateOne
 }
 
-// TODO: zod validation for accountId + integration test - expect 400
-// ! NO, not zod because accountId comes from req.params not req.body
 export const activateAccount = async (accountId: number) => {
   console.log('activateAccount');
+  const prisma = new PrismaClient();
 
-  // TODO: implement prisma.account.updateOne
+  await prisma.account.update({
+    where: { id: accountId },
+    data: { active: true }
+  });
 }
 
 export const _createAccount = async (userId: number, accountType: AccountType) => {

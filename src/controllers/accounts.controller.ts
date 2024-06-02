@@ -78,12 +78,19 @@ export const blockAccount = (req: Request, res: Response) => {
   }
 }
 
-export const activateAccount = (req: Request, res: Response) => {
+export const activateAccount = async (req: Request, res: Response) => {
   console.log('accounts.controller::activateAccount');
 
   try {
-    // TODO: accountService.activateAccount(accountId)
+    const { params: { accountId } } = req;
+    const parsedAccountId = parseInt(accountId);
+
+    await accountService.activateAccount(parsedAccountId);
+
+    res.sendStatus(200);
   } catch (e) {
+    // TODO: winston
+    console.error(e);
     res.sendStatus(500);
   }
 }

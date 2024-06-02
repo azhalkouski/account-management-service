@@ -12,7 +12,7 @@ const accountRouter = Router();
 accountRouter.post('/create/:userId', createAccount);
 
 accountRouter.get('/:accountId/balance', isShowBalanceTodayBelowLimit, getAccountBalance);
-accountRouter.post('/:accountId/block', blockAccount);
+accountRouter.post('/:accountId/block', blockAccount); // ! implement
 accountRouter.post('/:accountId/activate', activateAccount);
 
 export default accountRouter;
