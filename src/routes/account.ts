@@ -5,13 +5,13 @@ import {
   blockAccount,
   activateAccount
 } from '../controllers/accounts.controller';
-import checkIfCanReqBalanceToday from '../middlewares/checkIfCanReqBalanceToday.middleware';
+import isShowBalanceTodayBelowLimit from '../middlewares/isShowBalanceTodayBelowLimit.middleware';
 
 const accountRouter = Router();
 
 accountRouter.post('/create/:userId', createAccount);
 
-accountRouter.get('/:accountId/balance', checkIfCanReqBalanceToday, getAccountBalance);
+accountRouter.get('/:accountId/balance', isShowBalanceTodayBelowLimit, getAccountBalance);
 accountRouter.post('/:accountId/block', blockAccount);
 accountRouter.post('/:accountId/activate', activateAccount);
 

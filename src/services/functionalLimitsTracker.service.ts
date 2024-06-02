@@ -8,8 +8,6 @@
 
 const store = new Map<number, number>();
 
-// TODO: rename to functionalLimitsTracker
-
 export const getTimesBalanceShownToUserToday = (accountId: number) => {
   // TODO: apply fs module
   let currentCount = store.get(accountId);

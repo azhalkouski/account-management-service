@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import {
   getTimesBalanceShownToUserToday
-} from '../services/userActivityTracker.service';
+} from '../services/functionalLimitsTracker.service';
 import { BALANCE_LOOKUP_DAILY_LIMIT } from '../constants'
 
 
-const checkIfCanReqBalanceToday = (req: Request, res: Response, next: NextFunction) => {
+const isShowBalanceTodayBelowLimit = (req: Request, res: Response, next: NextFunction) => {
   const { params: { accountId } } = req;
 
   const parsedAccountId = parseInt(accountId);
@@ -19,5 +19,4 @@ const checkIfCanReqBalanceToday = (req: Request, res: Response, next: NextFuncti
   next();
 };
 
-// TODO: rename to isShowBalanceTodayBelowLimit
-export default checkIfCanReqBalanceToday;
+export default isShowBalanceTodayBelowLimit;
