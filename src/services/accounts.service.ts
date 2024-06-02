@@ -26,7 +26,20 @@ export const createCreditAccount = async (userId: number) => {
 export const getAccountBalance = async (accountId: number): Promise<number> => {
   console.log('accountService::getAccountBalance');
 
-  return 57;
+  const prisma = new PrismaClient();
+
+  const decimalBalance = await prisma.account.findFirstOrThrow({
+    where: {
+      id: accountId
+    },
+    select: {
+      balance: true
+    }
+  });
+
+  const numberBalance: number = decimalBalance.balance.toNumber();
+
+  return numberBalance;
 }
 
 // ! no zod validation: this method is not public api
