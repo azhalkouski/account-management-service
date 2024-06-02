@@ -17,14 +17,14 @@ const isShowBalanceTodayBelowLimit = (req: Request, res: Response, next: NextFun
       return res.sendStatus(403);
     }
 
+    next();
   } catch (e) {
     // TODO: winston log
     console.error(`System error while getTimesBalanceShownToUserToday`, e);
+    // next() anyways. it is our fault that getTimesBalanceShownToUserToday failed
+    // let user see thier balance
+    next();
   }
-
-  // next() anyways. it is our fault that getTimesBalanceShownToUserToday failed
-  // let user see thier balance
-  next();
 };
 
 export default isShowBalanceTodayBelowLimit;
