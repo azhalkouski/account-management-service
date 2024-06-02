@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 
-
 const DEBIT_ACCOUNT_TYPE_ID = 0;
 const CREDIT_ACCOUNT_TYPE_ID = 1;
 
@@ -40,6 +39,15 @@ export const getAccountBalance = async (accountId: number): Promise<number> => {
   const numberBalance: number = decimalBalance.balance.toNumber();
 
   return numberBalance;
+}
+
+export const updateAccountBalance = async (accountId: number, newBalance: number) => {
+  const prisma = new PrismaClient();
+
+  await prisma.account.update({
+    where: { id: accountId },
+    data: { balance: newBalance }
+  });
 }
 
 // ! no zod validation: this method is not public api
