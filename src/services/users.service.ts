@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { CreateUserT, UserT, UserShortcutT } from '../types/index';
+import { CreateUserT, User, UserShortcutT, PublicUser } from '../types/index';
 import { comparePassword } from '../utils';
 
 export const createUser = async (userData: CreateUserT): Promise<number> => {
@@ -14,7 +14,7 @@ export const createUser = async (userData: CreateUserT): Promise<number> => {
 export const findUserByEmailAndPassword = async (email: string, password: string): Promise<UserShortcutT | null> => {
   const prisma = new PrismaClient();
 
-  const user: UserT | null = await prisma.user.findFirst({
+  const user: User | null = await prisma.user.findFirst({
     where: {
       email: email,
     },
@@ -37,18 +37,35 @@ export const findUserByEmailAndPassword = async (email: string, password: string
   return UserShortcut;
 };
 
-export const getAllUsers = async (): Promise<UserT[]> => {
+export const getAllUsers = async (): Promise<PublicUser[]> => {
   const prisma = new PrismaClient();
-  const allUsers: UserT[] = await prisma.user.findMany();
+  const allUsers: PublicUser[] = await prisma.user.findMany({
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      document: true,
+      birth_date: true
+    }
+  });
+
+
 
   return allUsers;
 }
 
 export const findUserByUserId = async (id: number) => {
   const prisma = new PrismaClient();
-  const user: UserT | null = await prisma.user.findFirst({
+  const user: PublicUser | null = await prisma.user.findFirst({
     where: {
       id: id,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      document: true,
+      birth_date: true
     }
   });
 
@@ -56,7 +73,27 @@ export const findUserByUserId = async (id: number) => {
     return null;
   }
 
-  const { password, ...restUser } = user;
+  return user;
+};
 
-  return restUser;
+export const findUserByEmail = async (email: string) => {
+  const prisma = new PrismaClient();
+  const user: PublicUser | null = await prisma.user.findFirst({
+    where: {
+      email: email,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      document: true,
+      birth_date: true
+    }
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return user;
 };

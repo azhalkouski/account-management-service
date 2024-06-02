@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { PrismaClient, Prisma } from '@prisma/client';
 import * as usersService from '../services/users.service';
 import { getJWTSecret, hashPassword } from '../utils';
-import { CreateUserT, UserT, UserShortcutT } from '../types/index';
+import { CreateUserT, PublicUser, UserShortcutT } from '../types/index';
 import {
   EMAIL_IN_USE,
   CREATE_USER_ERROR_TYPE,
@@ -62,11 +62,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
       }
     } = req;
 
-    const user: UserT | null = await prisma.user.findFirst({
-      where: {
-        email: email,
-      },
-    });
+    const user: PublicUser | null = await usersService.findUserByEmail(email);
 
     if (user) {
       console.log('User with email already exists:', user);
