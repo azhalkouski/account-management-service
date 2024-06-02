@@ -1,6 +1,9 @@
 import { Request, Response } from 'express-serve-static-core';
 import { findUserByUserId } from '../services/users.service';
 import * as accountService from '../services/accounts.service';
+import {
+  incrementTimesBalanceShownToUserToday
+} from '../services/userActivityTracker.service'
 
 
 // ! TODO: who can create accoun for a user???
@@ -46,11 +49,7 @@ export const getAccountBalance = async (req: Request, res: Response) => {
     const parsedAccountId = parseInt(accountId);
     const accountBalance: number = await accountService.getAccountBalance(parsedAccountId);
 
-
-    // TODO: accountService.getAccountBalance(accountId)
-    // write to file ONLY IF SUCCESS getAccountBalance - fair deal
-    // TODO: fs.writeFile - async
-    // userActivityTracker.incrementBalanceShownCountForUser(userId)
+    incrementTimesBalanceShownToUserToday(parsedAccountId);
 
     res.status(200).json({
       accountBalance: accountBalance
