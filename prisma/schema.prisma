@@ -19,7 +19,7 @@ model User {
   password     String
   name         String
   document     String     @unique
-  birth_date   DateTime
+  birth_date   DateTime // this field must be closed for modifications
   accounts     Account[]
 }
 
@@ -31,14 +31,15 @@ model Account {
   daily_withdrawal_limit Decimal  @db.Decimal(10, 2)
   active                 Boolean  @default(false)
   account_type           Int
-  create_date            DateTime @default(now())
+  create_date            DateTime @default(now()) // this field must be closed for modifications
   transactions           Transaction[]
 }
 
+// actually all these fields must be closed for modifications
 model Transaction {
   id               Int      @id @default(autoincrement())
   account          Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
   account_id       Int
   value            Decimal  @db.Decimal(10, 2)
-  transaction_date DateTime @default(now())
+  transaction_date DateTime @default(now()) // this field must be closed for modifications
 }
