@@ -22,11 +22,11 @@ export const createCreditAccount = async (userId: number) => {
   return creditAccount;
 };
 
-export const getAccountBalance = async (accountId: number): Promise<number> => {
-  console.log('accountService::getAccountBalance');
-
-  const prisma = new PrismaClient();
-
+  export const getAccountBalance = async (accountId: number): Promise<number> => {
+    console.log('accountService::getAccountBalance');
+  
+    const prisma = new PrismaClient();
+  
   const decimalBalance = await prisma.account.findFirstOrThrow({
     where: {
       id: accountId
@@ -48,13 +48,6 @@ export const updateAccountBalance = async (accountId: number, newBalance: number
     where: { id: accountId },
     data: { balance: newBalance }
   });
-}
-
-// ! delete due to duplication of updateAccountBalance
-export const setAccountBalance = async (newBalance: number) => {
-  console.log('setAccountBalance');
-
-  // TODO: implement prisma.account.updateOne
 }
 
 export const blockAccount = async (accountId: number) => {
