@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { PrismaClient, Prisma } from '@prisma/client';
-import { findUserByEmailAndPassword, UserShortcutT } from '../services/users.service';
+import * as usersService from '../services/users.service';
 import { getJWTSecret, hashPassword } from '../utils';
-import { CreateUserT, UserT } from '../types/index';
+import { CreateUserT, UserT, UserShortcutT } from '../types/index';
 import {
   EMAIL_IN_USE,
   CREATE_USER_ERROR_TYPE,
@@ -10,22 +10,12 @@ import {
 } from '../constants';
 import jwt from 'jsonwebtoken';
 
-function isPrismaClientKnownRequestError(
-  error: unknown
-): error is Prisma.PrismaClientKnownRequestError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    'clientVersion' in error
-  );
-}
 
 /**
  * Checks if email and password match
  * Generates JWT and returns it within response
  * 
- * The client later will need to include an Authorization header in your request with
+ * The client later will need to include an Authorization header in requests with
  * the scheme set to bearer.
  */
 
@@ -33,10 +23,11 @@ function isPrismaClientKnownRequestError(
 export const signIn = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // TODO: add zod validation middleware
+    // ! YES, it is zod validation because data comes from req.body
     const { body: { email, password } } = req;
 
     // TODO: integration test: call this route and make sure that 400 sent on bad request body
-    const user: UserShortcutT | null = await findUserByEmailAndPassword(email, password);
+    const user: UserShortcutT | null = await usersService.findUserByEmailAndPassword(email, password);
 
     if (!user) {
       return res.sendStatus(401);
@@ -60,6 +51,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
   try {
     // TODO: add validation: fullName, document, birthDate
+    // ! YES, it is zod validation
     const {
       body: {
         email,
@@ -94,8 +86,11 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
       birth_date: birthDate
     };
 
-    await prisma.user.create({ data: newUser });
-    res.sendStatus(201);
+    const userId: number = await usersService.createUser(newUser);
+
+    res.status(201).json({
+      userId: userId
+    });
 
   } catch (e) {
     console.error(e);
@@ -112,6 +107,21 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
+// ==========================================
+// --------------Prisma Errors---------------
+// ==========================================
+function isPrismaClientKnownRequestError(
+  error: unknown
+): error is Prisma.PrismaClientKnownRequestError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    'clientVersion' in error
+  );
+}
+
+// меня очень  сильно смущает эта функция: где она, и то, что она имеет доступ к res
 function handlePrismaClientKnownRequestError(e: Prisma.PrismaClientKnownRequestError, res: Response) {
   const modelName = e.meta?.modelName;
       const modelTarget = Array.isArray(e.meta?.target) ? e.meta?.target : [];

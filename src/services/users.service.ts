@@ -1,12 +1,15 @@
 import { PrismaClient } from '@prisma/client';
 
-import { UserT } from '../types/index';
+import { CreateUserT, UserT, UserShortcutT } from '../types/index';
 import { comparePassword } from '../utils';
 
-export interface UserShortcutT {
-  id: string,
-  email: string
-};
+export const createUser = async (userData: CreateUserT): Promise<number> => {
+  const prisma = new PrismaClient();
+
+  const { id } = await prisma.user.create({ data: userData });
+
+  return id;
+}
 
 export const findUserByEmailAndPassword = async (email: string, password: string): Promise<UserShortcutT | null> => {
   const prisma = new PrismaClient();
