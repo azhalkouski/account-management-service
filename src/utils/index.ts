@@ -24,3 +24,14 @@ export const getJWTSecret = () => {
 
   return secret;
 };
+
+export const getWorkingDataDirPath = () => {
+  const workingDataDir = process.env.WORKING_DATA_DIR;
+
+  if (!workingDataDir) {
+    console.error("Missing WORKING_DATA_DIR");
+    process.exit(1);
+  };
+
+  return workingDataDir;
+};
