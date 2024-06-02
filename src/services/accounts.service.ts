@@ -50,20 +50,22 @@ export const updateAccountBalance = async (accountId: number, newBalance: number
   });
 }
 
-// ! no zod validation: this method is not public api
+// ! delete due to duplication of updateAccountBalance
 export const setAccountBalance = async (newBalance: number) => {
   console.log('setAccountBalance');
 
   // TODO: implement prisma.account.updateOne
 }
 
-// TODO: zod validation for accountId + integration test - expect 400
-// ! NO, not zod because accountId comes from req.params not req.body
 export const blockAccount = async (accountId: number) => {
   console.log('blockAccount');
+  const prisma = new PrismaClient();
 
-  // TODO: implement prisma.account.updateOne
-}
+  await prisma.account.update({
+    where: { id: accountId },
+    data: { active: false }
+  });
+};
 
 export const activateAccount = async (accountId: number) => {
   console.log('activateAccount');
@@ -73,7 +75,7 @@ export const activateAccount = async (accountId: number) => {
     where: { id: accountId },
     data: { active: true }
   });
-}
+};
 
 export const _createAccount = async (userId: number, accountType: AccountType) => {
   const prisma = new PrismaClient();

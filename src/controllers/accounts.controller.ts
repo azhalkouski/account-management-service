@@ -56,24 +56,24 @@ export const getAccountBalance = async (req: Request, res: Response) => {
       accountBalance: accountBalance
     });
   } catch (e) {
-    console.log(`Failed to getAccoutnBalance with accountId = ${accountId}`)
+    console.error(`Failed to getAccoutnBalance with accountId = ${accountId} with error ${e}`)
     res.sendStatus(500);
   }
 }
 
-export const blockAccount = (req: Request, res: Response) => {
+export const blockAccount = async (req: Request, res: Response) => {
   console.log('accounts.controller::blockAccount');
 
   try {
-    // TODO: accountService.blockAccount(accountId)
-    /**
-     * Это должно быть на уровне схемы базы данных
-     * Добавить констрейнт на аккаунт: документ нельзя апдэйтить
-    // TRIGGER
-    // if active = false
-    // RAISE EXCEPTION 'Update not allowed on blocked accont'
-     */
+    const { params: { accountId } } = req;
+    const parsedAccountId = parseInt(accountId);
+
+    await accountService.blockAccount(parsedAccountId);
+
+    res.sendStatus(200);
   } catch (e) {
+    // TODO: winston
+    console.error(e);
     res.sendStatus(500);
   }
 }
