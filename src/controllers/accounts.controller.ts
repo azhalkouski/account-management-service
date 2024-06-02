@@ -40,11 +40,11 @@ export const createAccount = async (req: Request, res: Response) => {
 
 export const getAccountBalance = async (req: Request, res: Response) => {
   console.log('accounts.controller::getAccountBalance');
-  const { params: { id } } = req;
+  const { params: { accountId } } = req;
   
   try {
-    const parsedId = parseInt(id);
-    const accountBalance: number = await accountService.getAccountBalance(parsedId);
+    const parsedAccountId = parseInt(accountId);
+    const accountBalance: number = await accountService.getAccountBalance(parsedAccountId);
 
 
     // TODO: accountService.getAccountBalance(accountId)
@@ -56,7 +56,7 @@ export const getAccountBalance = async (req: Request, res: Response) => {
       accountBalance: accountBalance
     });
   } catch (e) {
-    console.log(`Failed to getAccoutnBalance with accountId = ${id}`)
+    console.log(`Failed to getAccoutnBalance with accountId = ${accountId}`)
     res.sendStatus(500);
   }
 }
