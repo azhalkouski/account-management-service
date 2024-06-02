@@ -49,6 +49,7 @@ export const getAccountBalance = async (req: Request, res: Response) => {
     const parsedAccountId = parseInt(accountId);
     const accountBalance: number = await accountService.getAccountBalance(parsedAccountId);
 
+    // due to successful retrival increment attempts count
     incrementTimesBalanceShownToUserToday(parsedAccountId);
 
     res.status(200).json({
