@@ -5,6 +5,12 @@ export const EMAIL_NOT_VALID = 'Email invalid.';
 export const PASSWORD_NOT_VALID = 'Password invalid.';
 export const USER_DOCUMENT_IN_USE = 'User document is already in use.';
 
+// Account
+export const ACCOUNT_ID_NOT_VALID = "Account ID is invalied."
+
+// Make transaction
+export const MAKE_TRANSACTION_ERROR_TYPE = 'MAKE_TRANSACTION_ERROR_TYPE';
+export const MONEY_AMOUNT_NOT_VALID = 'Money amount is invalid.'
 
 export const whiteListUrls = [
   '/favicon.ico',

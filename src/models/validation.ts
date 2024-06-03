@@ -24,3 +24,11 @@ export const createUserSchema = baseUserSchema.extend({});
 export const userSchema = baseUserSchema.extend({
   id: z.number()
 });
+
+// accountId, moneyAmount
+
+export const accountIdSchema = z.number();
+export const unsignedMoneyAmountSchema = z.string().refine((value) => {
+  const floatWithTwoDecimalPlacesRegex = /^\d+(\.\d{2})?$/;
+  return floatWithTwoDecimalPlacesRegex.test(value);
+});
