@@ -38,8 +38,9 @@ model Account {
 // actually all these fields must be closed for modifications
 model Transaction {
   id               Int      @id @default(autoincrement())
-  account          Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
-  account_id       Int
+  from             Int
+  to               Int
   value            Decimal  @db.Decimal(10, 2)
   transaction_date DateTime @default(now()) // this field must be closed for modifications
+  accounts         Account[]
 }
