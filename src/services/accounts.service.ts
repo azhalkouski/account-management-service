@@ -85,3 +85,7 @@ export const _createAccount = async (userId: number, accountType: AccountType) =
 
   return createdAccount;
 };
+
+export const isDebitAccount = (account_type: number) => {
+  return account_type === DEBIT_ACCOUNT_TYPE_ID;
+}
