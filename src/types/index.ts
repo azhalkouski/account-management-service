@@ -11,3 +11,11 @@ export interface UserShortcutT {
   id: string,
   email: string
 };
+
+export interface TransactionT {
+  id: number;
+  from: number;
+  to: number;
+  value: number;
+  transactionDate: Date;
+}

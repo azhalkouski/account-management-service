@@ -4,6 +4,7 @@ import * as accountService from '../services/accounts.service';
 import {
   incrementTimesBalanceShownToUserToday
 } from '../services/functionalLimitsTracker.service'
+import { TransactionT } from '../types';
 
 
 // ! TODO: who can create accoun for a user???
@@ -57,6 +58,24 @@ export const getAccountBalance = async (req: Request, res: Response) => {
     });
   } catch (e) {
     console.error(`Failed to getAccoutnBalance with accountId = ${accountId} with error ${e}`)
+    res.sendStatus(500);
+  }
+}
+
+export const getAccountTransactions = async (req: Request, res: Response) => {
+  console.log('accounts.controller::getTransactionsHistory');
+  const { params: { accountId } } = req;
+  
+  try {
+    const parsedAccountId = parseInt(accountId);
+    const transactions: TransactionT[] = await accountService.getAccountTransactions(parsedAccountId);
+
+
+    res.status(200).json({
+      transactions: transactions
+    });
+  } catch (e) {
+    console.error(`Failed to getTransactionsHistory with accountId = ${accountId} with error ${e}`)
     res.sendStatus(500);
   }
 }

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { createAccount } from '../controllers/accounts.controller';
 import {
   getAccountBalance,
+  getAccountTransactions,
   blockAccount,
   activateAccount
 } from '../controllers/accounts.controller';
@@ -12,8 +13,7 @@ const accountRouter = Router();
 accountRouter.post('/create/:userId', createAccount);
 
 accountRouter.get('/:accountId/balance', isShowBalanceTodayBelowLimit, getAccountBalance);
-// TODO: implement
-// ! accountRouter.get('/:accountId/transactionsHistory', getTransactionsHistory);
+accountRouter.get('/:accountId/transactions', getAccountTransactions);
 accountRouter.post('/:accountId/block', blockAccount);
 accountRouter.post('/:accountId/activate', activateAccount);
 

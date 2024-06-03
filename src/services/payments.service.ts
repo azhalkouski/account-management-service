@@ -72,7 +72,7 @@ export const makePayment = async (sourceAccountId: string, destinationAccountId:
       console.log('NEW destinationBalance', updatedDestinationBalance);
   
       // create transaction
-      const transaction = await prisma.transaction.create({
+      const transaction = await prisma.transaction.create({ // вот этот тип мне нежун
         data: {
           from: parsedSource,
           to: parsedDestination,

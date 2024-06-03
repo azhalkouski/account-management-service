@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { TransactionT } from '../types';
 
 const DEBIT_ACCOUNT_TYPE_ID = 0;
 const CREDIT_ACCOUNT_TYPE_ID = 1;
@@ -39,6 +40,31 @@ export const createCreditAccount = async (userId: number) => {
   const numberBalance: number = decimalBalance.balance.toNumber();
 
   return numberBalance;
+}
+
+export const getAccountTransactions = async (accountId: number): Promise<TransactionT[]> => {
+  const prisma = new PrismaClient();
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      accounts: {
+        some: {
+          id: accountId
+        }
+      }
+    }
+  });
+
+  const adaptedTransaction: TransactionT[] = transactions.map((t) => {
+    const { transaction_date, ...restT } = t;
+    return {
+      ...restT,
+      value: Number(t.value),
+      transactionDate: transaction_date
+    };
+  })
+
+  return adaptedTransaction;
 }
 
 export const updateAccountBalance = async (accountId: number, newBalance: number) => {
