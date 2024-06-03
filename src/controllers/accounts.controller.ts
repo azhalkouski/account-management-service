@@ -80,6 +80,20 @@ export const getAccountTransactions = async (req: Request, res: Response) => {
   }
 }
 
+export const depositAmount = async (req: Request, res: Response) => {
+  // TODO: implement
+  res.status(500).json({
+    message: 'Depositing money NOT IMPLEMENTED.'
+  });
+};
+
+export const withdrawAmount = async (req: Request, res: Response) => {
+  // TODO: implement
+  res.status(500).json({
+    message: 'Withdrawing money NOT IMPLEMENTED.'
+  });
+};
+
 export const blockAccount = async (req: Request, res: Response) => {
   console.log('accounts.controller::blockAccount');
 

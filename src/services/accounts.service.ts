@@ -9,15 +9,11 @@ type AccountType = 0 | 1;
 /**
  * ?accoutType=debit&currency=byn
  */
-// TODO: zod validation for accountId + integration test - expect 400
-// ! NO, not zod because accountId comes from req.params not req.body
 export const createDebitAccount = async (userId: number) => {
   const debitAccount = await _createAccount(userId, DEBIT_ACCOUNT_TYPE_ID);
   return debitAccount;
 };
 
-// TODO: zod validation for accountId + integration test - expect 400
-// ! NO, not zod because accountId comes from req.params not req.body
 export const createCreditAccount = async (userId: number) => {
   const creditAccount = await _createAccount(userId, CREDIT_ACCOUNT_TYPE_ID);
   return creditAccount;
