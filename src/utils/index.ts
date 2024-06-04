@@ -35,3 +35,14 @@ export const getWorkingDataDirPath = () => {
 
   return workingDataDir;
 };
+
+export const getCORSWhiteList = () => {
+  const corsWhiteList = process.env.CORS_WHITE_LIST;
+
+  if (!corsWhiteList) {
+    console.error("Missing CORS_WHITE_LIST");
+    process.exit(1);
+  };
+
+  return corsWhiteList;
+};
