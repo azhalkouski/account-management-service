@@ -19,8 +19,9 @@ const isShowBalanceTodayBelowLimit = (req: Request, res: Response, next: NextFun
 
     next();
   } catch (e) {
-    // TODO: winston log
-    console.error(`System error while getTimesBalanceShownToUserToday`, e);
+    console.error(`System error while getTimesBalanceShownToUserToday.
+    Most likely fs module interaction`, e);
+
     // next() anyways. it is our fault that getTimesBalanceShownToUserToday failed
     // let user see thier balance
     next();

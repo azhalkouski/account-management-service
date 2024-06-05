@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { getWorkingDataDirPath } from '../utils'
+import logger from '../utils/logger';
 
 const WORKING_DIR = getWorkingDataDirPath();
 
@@ -9,10 +10,10 @@ export const getTimesBalanceShownToUserToday = (accountId: number) => {
   makeDirIfNotExist(WORKING_DIR);
 
   const targetFileName = getFileNameForToday();
-  const fileExists = doesFileForTodayExist(WORKING_DIR, targetFileName);
+  const fileExists = fs.existsSync(path.join(WORKING_DIR, targetFileName));
 
   if (fileExists) {
-    const pathToTargetFile = getPathToFileForToday(WORKING_DIR, targetFileName);
+    const pathToTargetFile = path.join(WORKING_DIR, targetFileName);
     const bufferData = fs.readFileSync(pathToTargetFile);
     const arrayData = JSON.parse(bufferData.toString());
     const mapData = new Map<number, number>(arrayData);
@@ -27,14 +28,13 @@ export const incrementTimesBalanceShownToUserToday = (accountId: number) => {
   makeDirIfNotExist(WORKING_DIR);
 
   const targetFileName = getFileNameForToday();
-  const fileExists = doesFileForTodayExist(WORKING_DIR, targetFileName);
-  const pathToTargetFile = getPathToFileForToday(WORKING_DIR, targetFileName);
+  const pathToTargetFile = path.join(WORKING_DIR, targetFileName);
+  const fileExists = fs.existsSync(pathToTargetFile);
 
   if (fileExists) {
     fs.readFile(pathToTargetFile, (err, data) => {
       if (err) {
-        // TODO: winston log
-        console.error(`Error while fs.readFile ${err}`);
+        logger.error(`Failed to read file at ${pathToTargetFile}. Error: ${err}`);
       }
 
       const dataMap = new Map<number, number>(JSON.parse(data.toString()));
@@ -65,8 +65,10 @@ export const incrementTimesBalanceShownToUserToday = (accountId: number) => {
   }
 }
 
-// PRIVATE FUNCTIONS BELOW
 
+//
+// PRIVATE FUNCTIONS BELOW
+//
 function makeDirIfNotExist(pathToDir: string) {
   const exists = fs.existsSync(pathToDir);
   if (!exists) {
@@ -77,30 +79,9 @@ function makeDirIfNotExist(pathToDir: string) {
 function writeNewMapToFile(pathToTargetFile: string, dataMapAsText: string) {
   fs.writeFile(pathToTargetFile, dataMapAsText, (err) => {
     if (err) {
-      // TODO: winston log
-      console.error(`Error while fs.writeFile ${err}`);
+      logger.error(`Failed to write file at path ${pathToTargetFile}. Error: ${err}`);
     }
   });
-}
-
-
-function doesFileForTodayExist(sourceDir: string, targetFileName: string) {
-  try {
-    const dir = fs.readdirSync(sourceDir);
-    const fileExists = dir.findIndex((dirEl) => dirEl === targetFileName) >= 0;
-
-    return fileExists;
-  } catch (e) {
-    // TODO: winston log
-    // TODO: return throw e
-    console.error(`Error while fs.readdirSync ${e}`);
-    return false;
-  }
-}
-
-
-function getPathToFileForToday(sourceDir: string, fileName: string) {
-  return path.join(sourceDir, fileName);
 }
 
 

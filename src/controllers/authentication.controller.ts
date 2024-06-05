@@ -9,6 +9,7 @@ import {
   USER_DOCUMENT_IN_USE
 } from '../constants';
 import jwt from 'jsonwebtoken';
+import logger from '../utils/logger';
 
 
 /**
@@ -21,11 +22,11 @@ import jwt from 'jsonwebtoken';
 
 
 export const signIn = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // TODO: add zod validation middleware
-    // ! YES, it is zod validation because data comes from req.body
-    const { body: { email, password } } = req;
+  // TODO: add zod validation middleware
+  // ! YES, it is zod validation because data comes from req.body
+  const { body: { email, password } } = req;
 
+  try {
     // TODO: integration test: call this route and make sure that 400 sent on bad request body
     const user: UserShortcutT | null = await usersService.findUserByEmailAndPassword(email, password);
 
@@ -39,33 +40,30 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
       jwt: `Bearer ${token}`
     });
   } catch (e) {
-    // TODO: winston.log(e)
-    // TODO: next(e)
-    console.error(e);
+    logger.error(`Sign in failed for user with email ${email} with error ${e}`);
     res.sendStatus(500);
   }
 };
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   const prisma = new PrismaClient();
+  // TODO: add validation: fullName, document, birthDate
+  // ! YES, it is zod validation
+  const {
+    body: {
+      email,
+      password,
+      fullName = "Human",
+      document = (Math.round(Math.random() * 100000000)).toString(),
+      birthDate =  new Date(1995, 3, 21)
+    }
+  } = req;
 
   try {
-    // TODO: add validation: fullName, document, birthDate
-    // ! YES, it is zod validation
-    const {
-      body: {
-        email,
-        password,
-        fullName = "Human",
-        document = (Math.round(Math.random() * 100000000)).toString(),
-        birthDate =  new Date(1995, 3, 21)
-      }
-    } = req;
-
     const user: PublicUser | null = await usersService.findUserByEmail(email);
 
     if (user) {
-      console.log('User with email already exists:', user);
+      logger.warn(`Attempt to sign up with existing email ${email}.`);
       return res.status(400).json({
         type: CREATE_USER_ERROR_TYPE,
         message: {
@@ -89,9 +87,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     });
 
   } catch (e) {
-    console.error(e);
-    // TODO: winston.log(e)
-    // TODO: next(e)
+    logger.error(`Signup failed for valid email and password. email: ${email}`);
 
     if (isPrismaClientKnownRequestError(e) && e.code === 'P2002') {
       handlePrismaClientKnownRequestError(e, res);
@@ -125,10 +121,14 @@ function handlePrismaClientKnownRequestError(e: Prisma.PrismaClientKnownRequestE
       if (e.meta?.target && !Array.isArray(e.meta?.target)) {
         // log in case it is not an array due to lack of static type defined on
         // Prisma Client
-        console.log(`Target is not array but ${JSON.stringify(e.meta?.target)}`);
+        logger.warn(`Target is not array but ${JSON.stringify(e.meta?.target)}.
+        Might need to work with types on Prisma`);
       }
 
       if (modelTarget.includes('document')) {
+        logger.warn(`An attempt to create user with duplicate document.
+        A user document expected to be unique per user.
+        Might be the same person trying to create second account.`)
         return res.status(400).json({
           type: CREATE_USER_ERROR_TYPE,
           message: {
@@ -136,7 +136,9 @@ function handlePrismaClientKnownRequestError(e: Prisma.PrismaClientKnownRequestE
           }
         });
       } else {
-        console.error(`Error on POST /users - modelName: ${modelName} - target field: ${modelTarget}`);
+        logger.error(`Error on POST /users - modelName: ${modelName} -
+        target field: ${modelTarget}. Review database User model and its
+        unique fields.`);
       }
 
       return res.sendStatus(400);

@@ -5,6 +5,7 @@ import {
   incrementTimesBalanceShownToUserToday
 } from '../services/functionalLimitsTracker.service'
 import { TransactionT } from '../types';
+import logger from '../utils/logger';
 
 
 // ! TODO: who can create accoun for a user???
@@ -12,7 +13,7 @@ import { TransactionT } from '../types';
 // some kind of SUPERUSER?
 export const createAccount = async (req: Request, res: Response) => {
   const { params: { userId }, query: { accountType = 'dibit' } } = req;
-  console.log('userId', userId);
+  logger.debug(`Create ${accountType} account for userId ${userId}`);
 
   try {
     // check if user with userId exists
@@ -20,8 +21,8 @@ export const createAccount = async (req: Request, res: Response) => {
     const user = findUserByUserId(parsedUserId);
 
     if (!user) {
-      console.log(`Attempt to create an account for non existent user.
-        Provided userId: ${userId}`);
+      logger.info(`Attempt to create an account for non existent user.
+      Provided userId: ${userId}`);
 
       return res.sendStatus(400);
     }
@@ -31,19 +32,16 @@ export const createAccount = async (req: Request, res: Response) => {
       ? await accountService.createDebitAccount(parsedUserId)
       : await accountService.createCreditAccount(parsedUserId);
 
-      console.log('account', account);
-
-    res.sendStatus(201);
+    res.status(201).json({
+      accountId: account.id,
+    });
   } catch (e) {
-    console.error(e);
-    // TODO: winston.log(e)
-    // TODO: next(e)
+    logger.error(`Failed to createAccount for userId ${userId}`);
     res.sendStatus(500);
   }
 };
 
 export const getAccountBalance = async (req: Request, res: Response) => {
-  console.log('accounts.controller::getAccountBalance');
   const { params: { accountId } } = req;
   
   try {
@@ -57,13 +55,12 @@ export const getAccountBalance = async (req: Request, res: Response) => {
       accountBalance: accountBalance
     });
   } catch (e) {
-    console.error(`Failed to getAccoutnBalance with accountId = ${accountId} with error ${e}`)
+    logger.error(`Failed to getAccoutnBalance with accountId = ${accountId} with error ${e}`);
     res.sendStatus(500);
   }
 }
 
 export const getAccountTransactions = async (req: Request, res: Response) => {
-  console.log('accounts.controller::getTransactionsHistory');
   const { params: { accountId } } = req;
   
   try {
@@ -75,7 +72,7 @@ export const getAccountTransactions = async (req: Request, res: Response) => {
       transactions: transactions
     });
   } catch (e) {
-    console.error(`Failed to getTransactionsHistory with accountId = ${accountId} with error ${e}`)
+    logger.error(`Failed to getTransactionsHistory with accountId = ${accountId} with error ${e}`);
     res.sendStatus(500);
   }
 }
@@ -95,35 +92,31 @@ export const withdrawAmount = async (req: Request, res: Response) => {
 };
 
 export const blockAccount = async (req: Request, res: Response) => {
-  console.log('accounts.controller::blockAccount');
+  const { params: { accountId } } = req;
 
   try {
-    const { params: { accountId } } = req;
     const parsedAccountId = parseInt(accountId);
 
     await accountService.blockAccount(parsedAccountId);
 
     res.sendStatus(200);
   } catch (e) {
-    // TODO: winston
-    console.error(e);
+    logger.error(`Failed to block account ${accountId} with error ${e}`);
     res.sendStatus(500);
   }
 }
 
 export const activateAccount = async (req: Request, res: Response) => {
-  console.log('accounts.controller::activateAccount');
+  const { params: { accountId } } = req;
 
   try {
-    const { params: { accountId } } = req;
     const parsedAccountId = parseInt(accountId);
 
     await accountService.activateAccount(parsedAccountId);
 
     res.sendStatus(200);
   } catch (e) {
-    // TODO: winston
-    console.error(e);
+    logger.error(`Failed to activate account ${accountId} with error ${e}`);
     res.sendStatus(500);
   }
 }

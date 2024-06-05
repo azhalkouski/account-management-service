@@ -1,5 +1,6 @@
 import { Request, Response } from "express-serve-static-core";
 import * as paymentsService from '../services/payments.service';
+import logger from '../utils/logger';
 
 export const handleMakePayment = async (req: Request, res: Response) => {
   const { body: { sourceAccountId, destinationAccountId, amount } } = req;
@@ -9,10 +10,9 @@ export const handleMakePayment = async (req: Request, res: Response) => {
 
     res.sendStatus(200);
   } catch (e) {
-    console.error(`Failed to make transaction for sourceAccId: ${sourceAccountId}
+    logger.error(`Failed to make transaction for sourceAccId: ${sourceAccountId}
     destinationAccId: ${destinationAccountId} amount: ${amount} with error ${e}`);
 
-    // TODO: winston
     res.sendStatus(500);
   }
 }
