@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import prismaClient from './prismaClient.service';
 import { TransactionT } from '../types';
 
 const DEBIT_ACCOUNT_TYPE_ID = 0;
@@ -22,9 +22,7 @@ export const createCreditAccount = async (userId: number) => {
   export const getAccountBalance = async (accountId: number): Promise<number> => {
     console.log('accountService::getAccountBalance');
   
-    const prisma = new PrismaClient();
-  
-  const decimalBalance = await prisma.account.findFirstOrThrow({
+  const decimalBalance = await prismaClient.account.findFirstOrThrow({
     where: {
       id: accountId
     },
@@ -39,9 +37,7 @@ export const createCreditAccount = async (userId: number) => {
 }
 
 export const getAccountTransactions = async (accountId: number): Promise<TransactionT[]> => {
-  const prisma = new PrismaClient();
-
-  const transactions = await prisma.transaction.findMany({
+  const transactions = await prismaClient.transaction.findMany({
     where: {
       accounts: {
         some: {
@@ -64,9 +60,7 @@ export const getAccountTransactions = async (accountId: number): Promise<Transac
 }
 
 export const updateAccountBalance = async (accountId: number, newBalance: number) => {
-  const prisma = new PrismaClient();
-
-  await prisma.account.update({
+  await prismaClient.account.update({
     where: { id: accountId },
     data: { balance: newBalance }
   });
@@ -74,9 +68,7 @@ export const updateAccountBalance = async (accountId: number, newBalance: number
 
 export const blockAccount = async (accountId: number) => {
   console.log('blockAccount');
-  const prisma = new PrismaClient();
-
-  await prisma.account.update({
+  await prismaClient.account.update({
     where: { id: accountId },
     data: { active: false }
   });
@@ -84,16 +76,14 @@ export const blockAccount = async (accountId: number) => {
 
 export const activateAccount = async (accountId: number) => {
   console.log('activateAccount');
-  const prisma = new PrismaClient();
 
-  await prisma.account.update({
+  await prismaClient.account.update({
     where: { id: accountId },
     data: { active: true }
   });
 };
 
 export const _createAccount = async (userId: number, accountType: AccountType) => {
-  const prisma = new PrismaClient();
 
   const newAccount = {
     person_id: userId,
@@ -101,7 +91,7 @@ export const _createAccount = async (userId: number, accountType: AccountType) =
     account_type: accountType,
   };
 
-  const createdAccount = await prisma.account.create({
+  const createdAccount = await prismaClient.account.create({
     data: newAccount
   });
 

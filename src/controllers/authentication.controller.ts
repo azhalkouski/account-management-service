@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express-serve-static-core';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import * as usersService from '../services/users.service';
 import { getJWTSecret, hashPassword } from '../utils';
 import { CreateUserT, PublicUser, UserShortcutT } from '../types/index';
@@ -46,7 +46,6 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
 };
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
-  const prisma = new PrismaClient();
   // TODO: add validation: fullName, document, birthDate
   // ! YES, it is zod validation
   const {
@@ -94,8 +93,6 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     res.sendStatus(500);
-  } finally {
-    await prisma.$disconnect();
   }
 };
 

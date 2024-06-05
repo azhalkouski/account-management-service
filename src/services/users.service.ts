@@ -1,20 +1,17 @@
-import { PrismaClient } from '@prisma/client';
+import prismaClient from './prismaClient.service';
 
 import { CreateUserT, User, UserShortcutT, PublicUser } from '../types/index';
 import { comparePassword } from '../utils';
 
 export const createUser = async (userData: CreateUserT): Promise<number> => {
-  const prisma = new PrismaClient();
 
-  const { id } = await prisma.user.create({ data: userData });
+  const { id } = await prismaClient.user.create({ data: userData });
 
   return id;
 }
 
 export const findUserByEmailAndPassword = async (email: string, password: string): Promise<UserShortcutT | null> => {
-  const prisma = new PrismaClient();
-
-  const user: User | null = await prisma.user.findFirst({
+  const user: User | null = await prismaClient.user.findFirst({
     where: {
       email: email,
     },
@@ -38,8 +35,7 @@ export const findUserByEmailAndPassword = async (email: string, password: string
 };
 
 export const getAllUsers = async (): Promise<PublicUser[]> => {
-  const prisma = new PrismaClient();
-  const allUsers: PublicUser[] = await prisma.user.findMany({
+  const allUsers: PublicUser[] = await prismaClient.user.findMany({
     select: {
       id: true,
       email: true,
@@ -49,14 +45,11 @@ export const getAllUsers = async (): Promise<PublicUser[]> => {
     }
   });
 
-
-
   return allUsers;
 }
 
 export const findUserByUserId = async (id: number) => {
-  const prisma = new PrismaClient();
-  const user: PublicUser | null = await prisma.user.findFirst({
+  const user: PublicUser | null = await prismaClient.user.findFirst({
     where: {
       id: id,
     },
@@ -77,8 +70,7 @@ export const findUserByUserId = async (id: number) => {
 };
 
 export const findUserByEmail = async (email: string) => {
-  const prisma = new PrismaClient();
-  const user: PublicUser | null = await prisma.user.findFirst({
+  const user: PublicUser | null = await prismaClient.user.findFirst({
     where: {
       email: email,
     },

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import prismaClient from './prismaClient.service';
 import Decimal from "decimal.js"; 
 import { isDebitAccount } from '../services/accounts.service';
 
@@ -14,13 +14,11 @@ import { isDebitAccount } from '../services/accounts.service';
  * 6. source and has sufficient amount, destination exists, both are active:: SUCCESS
  */
 export const makePayment = async (sourceAccountId: string, destinationAccountId: string, amount: string) => {
-  const prisma = new PrismaClient();
-
   const parsedSource = parseInt(sourceAccountId);
   const parsedDestination = parseInt(destinationAccountId);
   const decimalAmount = new Decimal(parseFloat(amount));
 
-  const { account_type: sourceAccoutType } = await prisma.account.findFirstOrThrow({
+  const { account_type: sourceAccoutType } = await prismaClient.account.findFirstOrThrow({
     where: {
       id: parsedSource
     },
@@ -37,7 +35,7 @@ export const makePayment = async (sourceAccountId: string, destinationAccountId:
 
   try {
     // TRANSACTION BEGIN
-    await prisma.$transaction(async (prisma) => {
+    await prismaClient.$transaction(async (prisma) => {
 
 
       const { balance: sourceBalance } = await prisma.account.findFirstOrThrow({
@@ -60,11 +58,11 @@ export const makePayment = async (sourceAccountId: string, destinationAccountId:
       }
 
       // update source and destination balance
-      const { balance: updatedSourceBalance } = await prisma.account.update({
+      const { balance: updatedSourceBalance } = await prismaClient.account.update({
         where: { id: parsedSource },
         data: { balance: newSourceBalance }
       });
-      const { balance: updatedDestinationBalance } = await prisma.account.update({
+      const { balance: updatedDestinationBalance } = await prismaClient.account.update({
         where: { id: parsedDestination },
         data: { balance: newDestinationBalance }
       });
@@ -72,7 +70,7 @@ export const makePayment = async (sourceAccountId: string, destinationAccountId:
       console.log('NEW destinationBalance', updatedDestinationBalance);
   
       // create transaction
-      const transaction = await prisma.transaction.create({ // вот этот тип мне нежун
+      const transaction = await prismaClient.transaction.create({
         data: {
           from: parsedSource,
           to: parsedDestination,
