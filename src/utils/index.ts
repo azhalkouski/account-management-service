@@ -46,3 +46,16 @@ export const getCORSWhiteList = () => {
 
   return corsWhiteList;
 };
+
+export const getLoggerLevel = _extractEnvVarWithPocessExit('LOGGER_LEVEL');
+
+function _extractEnvVarWithPocessExit(envVarName: string) {
+  const envVar = process.env[envVarName];
+
+  if (!envVar) {
+    console.error(`Missing ${envVarName}`);
+    process.exit(1);
+  };
+
+  return envVar;
+}

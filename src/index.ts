@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import routes from './routes';
 import { whiteListUrls } from './constants';
 import corsOptions from './configs/cors.config';
+import logger from './utils/logger';
 
 dotenv.config();
 
@@ -17,8 +18,6 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(cors(corsOptions));
 
-//TODO: windson for logging
-// switch on/off debug mode via .env
 app.use(checkAuthenticationMiddleware(whiteListUrls));
 app.use("/api/v1", routes);
 
@@ -27,6 +26,9 @@ app.get('/auth/login', passport.authenticate('jwt', { session: false }), (req, r
 });
 
 app.get('/', (req, res) => {
+  logger.info('index route requested');
+  logger.debug(`request from origin (${req.headers.origin})`);
+
   res.json({
     message: 'Welcome to white listed'
   });
