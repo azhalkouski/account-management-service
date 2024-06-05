@@ -1,10 +1,8 @@
 import winston from 'winston';
 import { getLoggerLevel } from '../utils/index';
 
-console.log('getLoggerLevel', getLoggerLevel);
-
 const logger = winston.createLogger({
-  level: getLoggerLevel,
+  level: getLoggerLevel(),
   format: winston.format.json(),
   defaultMeta: { service: 'account-management-service' },
   transports: [

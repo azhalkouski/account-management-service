@@ -7,12 +7,12 @@ const corsOptions = {
   // @ts-ignore
   origin: function (origin, callback) {
     console.log('origin', origin)
-    const predicate = process.env.NODE_ENV === 'production'
+    const envDependentCondition = process.env.NODE_ENV === 'production'
       ? corsWhiteList.indexOf(origin) !== -1
       : corsWhiteList.indexOf(origin) !== -1 || !origin;
 
-      if (predicate) {
-      logger.debug(`Request from untrusted origin ${origin} in ${process.env.NODE_ENV} environment.`);
+      if (envDependentCondition) {
+      logger.debug(`Request from trusted origin ${origin} in ${process.env.NODE_ENV} environment.`);
       callback(null, true)
     } else {
       logger.warn(`Request from untrusted origin ${origin} in ${process.env.NODE_ENV} environment.`);

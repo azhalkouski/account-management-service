@@ -27,7 +27,6 @@ app.get('/auth/login', passport.authenticate('jwt', { session: false }), (req, r
 
 app.get('/', (req, res) => {
   logger.info('index route requested');
-  logger.debug(`request from origin (${req.headers.origin})`);
 
   res.json({
     message: 'Welcome to white listed'
