@@ -10,9 +10,12 @@ export const handleMakePayment = async (req: Request, res: Response) => {
 
     res.sendStatus(200);
   } catch (e) {
+    const stringError = JSON.stringify(e);
     logger.error(`Failed to make transaction for sourceAccId: ${sourceAccountId}
-    destinationAccId: ${destinationAccountId} amount: ${amount} with error ${e}`);
+    destinationAccId: ${destinationAccountId} amount: ${amount}
+    with error ${stringError}`);
 
+    // for transactions don't expose any details
     res.sendStatus(500);
   }
 }

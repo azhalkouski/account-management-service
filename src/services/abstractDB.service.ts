@@ -1,9 +1,11 @@
+import { Prisma } from '@prisma/client';
 import {
   CreateUserT,
   User,
   PublicUser,
-  AccountType,
-  CreateAccountT
+  AccountT,
+  CreateAccountT,
+  TransactionT
 } from '../types/index';
 
 
@@ -13,16 +15,16 @@ abstract class AbstractDBService {
   abstract findAllUsers(): Promise<PublicUser[]>;
 
   abstract createAccount(accountData: CreateAccountT): Promise<{ accountId: number }>;
-  abstract activateAccount(): void;
-  abstract blockAccount(): void;
+  abstract activateAccount(accountId: number): void;
+  abstract blockAccount(accountId: number): void;
 
-  abstract findAccountById(id: number): Promise<AccountType | null>;
+  abstract findAccountByIdOrThrow(id: number): Promise<AccountT>;
 
-  abstract getAccountBalance(): void;
-  abstract updateAccountBalance(): void;
+  abstract getAccountBalance(accountId: number): Promise<Prisma.Decimal>;
+  abstract updateAccountBalance(accountId: number, newBalance: Prisma.Decimal): void;
 
-  abstract createTransaction(): void;
-  abstract getTransactionsByAccountId(): void;
+  abstract createTransaction(from: number, to: number, value: Prisma.Decimal): Promise<{ transactionId: number }>;
+  abstract getTransactionsByAccountId(accountId: number): Promise<TransactionT[]>;
 }
 
 export default AbstractDBService;

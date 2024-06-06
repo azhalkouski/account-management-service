@@ -1,10 +1,10 @@
-import prismaClient from './prismaClient.service';
-import { TransactionT } from '../types';
+import { Prisma } from '@prisma/client';
+import { TransactionT, AccountType } from '../types';
+import prismaDBService from './prismaDB.service';
 
 const DEBIT_ACCOUNT_TYPE_ID = 0;
 const CREDIT_ACCOUNT_TYPE_ID = 1;
 
-type AccountType = 0 | 1;
 
 /**
  * ?accoutType=debit&currency=byn
@@ -19,83 +19,37 @@ export const createCreditAccount = async (userId: number) => {
   return creditAccount;
 };
 
-  export const getAccountBalance = async (accountId: number): Promise<number> => {
-    console.log('accountService::getAccountBalance');
-  
-  const decimalBalance = await prismaClient.account.findFirstOrThrow({
-    where: {
-      id: accountId
-    },
-    select: {
-      balance: true
-    }
-  });
-
-  const numberBalance: number = decimalBalance.balance.toNumber();
-
-  return numberBalance;
+export const getAccountBalance = async (accountId: number): Promise<Prisma.Decimal> => {
+  const balance = await prismaDBService.getAccountBalance(accountId);
+  return balance;
 }
 
 export const getAccountTransactions = async (accountId: number): Promise<TransactionT[]> => {
-  const transactions = await prismaClient.transaction.findMany({
-    where: {
-      accounts: {
-        some: {
-          id: accountId
-        }
-      }
-    }
-  });
+  const transactions = await prismaDBService.getTransactionsByAccountId(accountId);
 
-  const adaptedTransaction: TransactionT[] = transactions.map((t) => {
-    const { transaction_date, ...restT } = t;
-    return {
-      ...restT,
-      value: Number(t.value),
-      transactionDate: transaction_date
-    };
-  })
-
-  return adaptedTransaction;
-}
-
-export const updateAccountBalance = async (accountId: number, newBalance: number) => {
-  await prismaClient.account.update({
-    where: { id: accountId },
-    data: { balance: newBalance }
-  });
+  return transactions;
 }
 
 export const blockAccount = async (accountId: number) => {
-  console.log('blockAccount');
-  await prismaClient.account.update({
-    where: { id: accountId },
-    data: { active: false }
-  });
+  // ? не понимаю зачем мне эта прослойка в виде сервиса
+  // ? разве что чтобы контроллер не занд про базу данных и взаимодействие с ней
+  await prismaDBService.blockAccount(accountId);
 };
 
 export const activateAccount = async (accountId: number) => {
-  console.log('activateAccount');
-
-  await prismaClient.account.update({
-    where: { id: accountId },
-    data: { active: true }
-  });
+  await prismaDBService.activateAccount(accountId);
 };
 
-export const _createAccount = async (userId: number, accountType: AccountType) => {
-
+export const _createAccount = async (userId: number, accountType: AccountType): Promise<{ accountId: number }> => {
   const newAccount = {
-    person_id: userId,
-    daily_withdrawal_limit: 100,
-    account_type: accountType,
+    personId: userId,
+    dailyWithdrawalLimit: 100,
+    accountType: accountType,
   };
 
-  const createdAccount = await prismaClient.account.create({
-    data: newAccount
-  });
+  const account = await prismaDBService.createAccount(newAccount);
 
-  return createdAccount;
+  return account;
 };
 
 export const isDebitAccount = (account_type: number) => {

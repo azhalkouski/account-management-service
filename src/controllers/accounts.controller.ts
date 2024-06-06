@@ -1,11 +1,11 @@
 import { Request, Response } from 'express-serve-static-core';
-import { findUserByUserId } from '../services/users.service';
 import * as accountService from '../services/accounts.service';
 import {
   incrementTimesBalanceShownToUserToday
 } from '../services/functionalLimitsTracker.service'
 import { TransactionT } from '../types';
 import logger from '../utils/logger';
+import { PRISMA_VALIDATION_ERROR, FOREIGN_KEY_CONSTRAINT_FAILED } from '../constants'
 
 
 // ! TODO: who can create accoun for a user???
@@ -16,27 +16,24 @@ export const createAccount = async (req: Request, res: Response) => {
   logger.debug(`Create ${accountType} account for userId ${userId}`);
 
   try {
-    // check if user with userId exists
     const parsedUserId = parseInt(userId);
-    const user = findUserByUserId(parsedUserId);
-
-    if (!user) {
-      logger.info(`Attempt to create an account for non existent user.
-      Provided userId: ${userId}`);
-
-      return res.sendStatus(400);
-    }
-  
-    // create account for userId
-    const account = accountType === 'debit'
+    const { accountId } = accountType === 'debit'
       ? await accountService.createDebitAccount(parsedUserId)
       : await accountService.createCreditAccount(parsedUserId);
 
     res.status(201).json({
-      accountId: account.id,
+      accountId: accountId,
     });
   } catch (e) {
     logger.error(`Failed to createAccount for userId ${userId}`);
+
+    if (
+      e instanceof Error && e.message === FOREIGN_KEY_CONSTRAINT_FAILED ||
+      e instanceof Error && e.message === PRISMA_VALIDATION_ERROR) {
+      res.sendStatus(400);
+    }
+
+    // in case of PRISMA_CLIENT_INITIALIZATION_ERROR or anything else
     res.sendStatus(500);
   }
 };
@@ -46,7 +43,7 @@ export const getAccountBalance = async (req: Request, res: Response) => {
   
   try {
     const parsedAccountId = parseInt(accountId);
-    const accountBalance: number = await accountService.getAccountBalance(parsedAccountId);
+    const accountBalance = await accountService.getAccountBalance(parsedAccountId);
 
     // due to successful retrival increment attempts count
     incrementTimesBalanceShownToUserToday(parsedAccountId);
@@ -96,7 +93,6 @@ export const blockAccount = async (req: Request, res: Response) => {
 
   try {
     const parsedAccountId = parseInt(accountId);
-
     await accountService.blockAccount(parsedAccountId);
 
     res.sendStatus(200);

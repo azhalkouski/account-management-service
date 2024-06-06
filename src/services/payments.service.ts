@@ -1,6 +1,9 @@
 import prismaClient from './prismaClient.service';
+import prismaDBService from './prismaDB.service';
 import Decimal from "decimal.js"; 
 import { isDebitAccount } from '../services/accounts.service';
+import { INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR } from '../constants';
+import logger from '../utils/logger';
 
 /**
  * Crrent support: DEBIT ACCOUNTS ONLY
@@ -18,69 +21,36 @@ export const makePayment = async (sourceAccountId: string, destinationAccountId:
   const parsedDestination = parseInt(destinationAccountId);
   const decimalAmount = new Decimal(parseFloat(amount));
 
-  const { account_type: sourceAccoutType } = await prismaClient.account.findFirstOrThrow({
-    where: {
-      id: parsedSource
-    },
-    select: {
-      account_type: true
-    }
-  })
-
-
-  if (isDebitAccount(sourceAccoutType)) {
-    throw new Error(`Only debit accounts currently supported, but got CREDIT ACCOUNT
-    of id: ${parsedSource}`);
-  }
-
   try {
     // TRANSACTION BEGIN
     await prismaClient.$transaction(async (prisma) => {
 
+      const { account_type: sourceAccountType, balance: sourceBalance } = await prismaDBService.findAccountByIdOrThrow(parsedSource);
+      const { balance: destinationBalance } = await prismaDBService.findAccountByIdOrThrow(parsedDestination);
 
-      const { balance: sourceBalance } = await prisma.account.findFirstOrThrow({
-        where: { id: parsedSource },
-        select: { balance: true }
-      });
-      const { balance: destinationBalance } = await prisma.account.findFirstOrThrow({
-        where: { id: parsedDestination },
-        select: { balance: true }
-      });
-      console.log('OLD sourceBalance', sourceBalance);
-      console.log('OLD destinationBalance', destinationBalance);
+      if (isDebitAccount(sourceAccountType)) {
+        const err = new Error(`Only debit accounts payments are currently supported,
+        but got CREDIT ACCOUNT of id: ${parsedSource}`);
+        logger.error(`Error while making payment. Error: ${err}`);
+        throw err;
+      }
 
       const newSourceBalance = new Decimal(sourceBalance).sub(decimalAmount);
       const newDestinationBalance = new Decimal(destinationBalance).add(decimalAmount);
 
       // check if balance has required amount
       if (newSourceBalance.lessThan(0)){
-        throw new Error(`Insufficient amount on account with id: ${parsedSource}`);
+        const error = new Error(INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR);
+        logger.info(`Transaction failed due to error: ${JSON.stringify(error)}.
+        Insufficient amount on account with id: ${parsedSource}`);
+        throw error;
       }
 
-      // update source and destination balance
-      const { balance: updatedSourceBalance } = await prismaClient.account.update({
-        where: { id: parsedSource },
-        data: { balance: newSourceBalance }
-      });
-      const { balance: updatedDestinationBalance } = await prismaClient.account.update({
-        where: { id: parsedDestination },
-        data: { balance: newDestinationBalance }
-      });
-      console.log('NEW sourceBalance', updatedSourceBalance);
-      console.log('NEW destinationBalance', updatedDestinationBalance);
-  
-      // create transaction
-      const transaction = await prismaClient.transaction.create({
-        data: {
-          from: parsedSource,
-          to: parsedDestination,
-          value: decimalAmount,
-          accounts: {
-            connect: [{ id: parsedSource }, { id: parsedDestination }]
-          }
-        }
-      });
-      console.log('transaction', transaction);
+      await prismaDBService.updateAccountBalance(parsedSource, newSourceBalance);
+      await prismaDBService.updateAccountBalance(parsedDestination, newDestinationBalance);
+
+      // record transaction
+      await prismaDBService.createTransaction(parsedSource, parsedDestination, decimalAmount);
     });
     // TRANSACTION END;
   } catch (e) {
