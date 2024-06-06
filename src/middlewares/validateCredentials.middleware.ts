@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import {
-  CREATE_USER_ERROR_TYPE,
   EMAIL_NOT_VALID,
   PASSWORD_NOT_VALID
 } from '../constants';
@@ -14,7 +13,6 @@ const validateCredentials = (req: Request, res: Response, next: NextFunction) =>
 
   if (emailError) {
     return res.status(400).json({
-      type: CREATE_USER_ERROR_TYPE,
       massage: {
         email: EMAIL_NOT_VALID
       }
@@ -23,7 +21,6 @@ const validateCredentials = (req: Request, res: Response, next: NextFunction) =>
 
   if (passwordError) {
     return res.status(400).json({
-      type: CREATE_USER_ERROR_TYPE,
       massage: {
         password: PASSWORD_NOT_VALID
       }
