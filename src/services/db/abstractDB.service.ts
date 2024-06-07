@@ -23,8 +23,11 @@ abstract class AbstractDBService {
   abstract getAccountBalance(accountId: number): Promise<Prisma.Decimal>;
   abstract updateAccountBalance(accountId: number, newBalance: Prisma.Decimal): void;
 
-  abstract registerMoneyTransfer(from: number, to: number, value: Prisma.Decimal): Promise<{ transactionId: number }>;
+  abstract registerMoneyTransfer(from: number, to: number, value: Prisma.Decimal): Promise<{ transferId: number }>;
   abstract getTransactionsByAccountId(accountId: number): Promise<TransactionT[]>;
+
+  // ! uncomment and IMPLEMENT
+  // abstract doMoneyTransferTransaction(from: string, to: string, amount: Prisma.Decimal): void;
 }
 
 export default AbstractDBService;
