@@ -15,7 +15,7 @@ import { isDebitAccount } from '../../services/accounts.service';
 import { INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR } from '../../constants';
 
 /**
- * ERROR HANDLING abstracted awai into withPrismaErrorHandlers
+ * ERROR HANDLING abstracted away into withPrismaErrorHandlers
  * at ./withPrismaErrorHandlers.ts
  */
 
@@ -216,7 +216,7 @@ class PrismaDBService extends AbstractDBService {
   async doMoneyTransferTransaction(fromId: number, toId: number, amount: Prisma.Decimal) {
     try {
       // TRANSACTION BEGIN
-      await this.prismaClient.$transaction(async (prisma) => {
+      await this.prismaClient.$transaction(async (_) => {
   
         const {
           account_type: sourceAccountType,
