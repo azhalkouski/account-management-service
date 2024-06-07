@@ -1,5 +1,6 @@
 import AbstractDBService from './abstractDB.service';
-import { Prisma, PrismaClient,  } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import Decimal from "decimal.js"; 
 import withPrismaErrorHandlers from './withPrismaErrorHandlers';
 import {
   CreateUserT,
@@ -10,6 +11,8 @@ import {
   TransactionT
 } from '../../types/index';
 import logger from '../../utils/logger';
+import { isDebitAccount } from '../../services/accounts.service';
+import { INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR } from '../../constants';
 
 /**
  * ERROR HANDLING abstracted awai into withPrismaErrorHandlers
@@ -151,7 +154,7 @@ class PrismaDBService extends AbstractDBService {
     return balance;
   };
 
-  async registerMoneyTransfer(from: number, to: number, amount: Prisma.Decimal) {
+  async registerMoneyTransfer(fromId: number, to: number, amount: Prisma.Decimal) {
     if (!Prisma.Decimal.isDecimal(amount)) {
       const error = new Error(`registerMoneyTransfer is called with Amount of type NOT
       DECIMAL value must be of type Decimal`);
@@ -162,11 +165,11 @@ class PrismaDBService extends AbstractDBService {
     const registerMoneyTransferPrisma = async() => {
       const { id } = await this.prismaClient.transaction.create({
         data: {
-          from: from,
+          from: fromId,
           to: to,
           value: amount,
           accounts: {
-            connect: [{ id: from }, { id: to }]
+            connect: [{ id: fromId }, { id: to }]
           }
         }
       });
@@ -203,6 +206,56 @@ class PrismaDBService extends AbstractDBService {
     const userId = await withPrismaErrorHandlers(getTransactionsByAccountIdPrisma);
     return userId;
   };
+
+  /**
+   * 
+   * @param fromId - money sender accountId
+   * @param to  - money receiver accountId
+   * @param amount - Decimal amount of money
+   */
+  async doMoneyTransferTransaction(fromId: number, toId: number, amount: Prisma.Decimal) {
+    try {
+      // TRANSACTION BEGIN
+      await this.prismaClient.$transaction(async (prisma) => {
+  
+        const {
+          account_type: sourceAccountType,
+          balance: sourceBalance
+        } = await prismaDBService.findAccountByIdOrThrow(fromId);
+        const {
+          balance: destinationBalance
+        } = await prismaDBService.findAccountByIdOrThrow(toId);
+  
+        if (isDebitAccount(sourceAccountType)) {
+          const err = new Error(`Only debit accounts payments are currently supported,
+          but got CREDIT ACCOUNT of id: ${fromId}`);
+          logger.error(`Error while making payment. Error: ${err}`);
+          throw err;
+        }
+  
+        const newSourceBalance = new Decimal(sourceBalance).sub(amount);
+        const newDestinationBalance = new Decimal(destinationBalance).add(amount);
+  
+        // check if balance has required amount
+        if (newSourceBalance.lessThan(0)){
+          const error = new Error(INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR);
+          logger.info(`Transaction failed due to error: ${JSON.stringify(error)}.
+          Insufficient amount on account with id: ${fromId}`);
+          throw error;
+        }
+
+        await prismaDBService.updateAccountBalance(fromId, newSourceBalance);
+        await prismaDBService.updateAccountBalance(toId, newDestinationBalance);
+
+        // record transaction
+        await prismaDBService.registerMoneyTransfer(fromId, toId, amount);
+      });
+      // TRANSACTION END;
+    } catch (e) {
+      console.error(`Transaction failed with error: ${e}`);
+      throw e;
+    }
+  }
 }
 
 
