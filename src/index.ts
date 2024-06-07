@@ -21,21 +21,12 @@ app.use(cors(corsOptions));
 app.use(checkAuthenticationMiddleware(whiteListUrls));
 app.use("/api/v1", routes);
 
-app.get('/auth/login', passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.send('Welcome to the accounts management api!');
-});
-
 app.get('/', (req, res) => {
   logger.info('index route requested');
 
   res.json({
     message: 'Welcome to white listed'
   });
-});
-
-app.get('/protected', (req, res) => {
-  console.log('req.user', req.user);
-  res.send('Welcome to protected!');
 });
 
 
