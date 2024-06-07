@@ -6,7 +6,7 @@ import {
   AccountT,
   CreateAccountT,
   TransactionT
-} from '../types/index';
+} from '../../types/index';
 
 
 abstract class AbstractDBService {

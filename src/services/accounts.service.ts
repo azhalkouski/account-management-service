@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { TransactionT, AccountType } from '../types';
-import prismaDBService from './prismaDB.service';
+import prismaDBService from './db';
 
 const DEBIT_ACCOUNT_TYPE_ID = 0;
 const CREDIT_ACCOUNT_TYPE_ID = 1;

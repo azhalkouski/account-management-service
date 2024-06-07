@@ -7,15 +7,15 @@ import {
   CreateAccountT,
   AccountT,
   TransactionT
-} from '../types/index';
-import logger from '../utils/logger';
+} from '../../types/index';
+import logger from '../../utils/logger';
 import {
   UNIQUE_CONSTRAINT_FAILED,
   PRISMA_VALIDATION_ERROR,
   PRISMA_CLIENT_INITIALIZATION_ERROR,
   FOREIGN_KEY_CONSTRAINT_FAILED,
   NOT_FOUND_IN_DATABASE
-} from '../constants/index';
+} from '../../constants/index';
 
 /**
  * ERROR HANDLING

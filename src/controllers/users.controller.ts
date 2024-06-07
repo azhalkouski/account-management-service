@@ -1,5 +1,5 @@
 import { Request, Response } from "express-serve-static-core";
-import prismaDBService from "../services/prismaDB.service";
+import prismaDBService from "../services/db/prismaDB.service";
 import logger from '../utils/logger';
 import { PublicUser } from '../types/index';
 

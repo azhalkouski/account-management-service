@@ -1,4 +1,4 @@
-import prismaDBService from './prismaDB.service';
+import prismaDBService from './db';
 import { CreateUserT, User } from '../types/index';
 import { comparePassword } from '../utils';
 

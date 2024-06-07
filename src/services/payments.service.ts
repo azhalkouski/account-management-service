@@ -1,5 +1,5 @@
 import prismaClient from './prismaClient.service';
-import prismaDBService from './prismaDB.service';
+import prismaDBService from './db';
 import Decimal from "decimal.js"; 
 import { isDebitAccount } from '../services/accounts.service';
 import { INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR } from '../constants';
