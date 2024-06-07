@@ -50,7 +50,7 @@ export const makePayment = async (sourceAccountId: string, destinationAccountId:
       await prismaDBService.updateAccountBalance(parsedDestination, newDestinationBalance);
 
       // record transaction
-      await prismaDBService.createTransaction(parsedSource, parsedDestination, decimalAmount);
+      await prismaDBService.registerMoneyTransfer(parsedSource, parsedDestination, decimalAmount);
     });
     // TRANSACTION END;
   } catch (e) {

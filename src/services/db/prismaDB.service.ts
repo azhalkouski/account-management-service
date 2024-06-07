@@ -363,9 +363,9 @@ class PrismaDBService extends AbstractDBService {
     }
   };
 
-  async createTransaction(from: number, to: number, amount: Prisma.Decimal) {
+  async registerMoneyTransfer(from: number, to: number, amount: Prisma.Decimal) {
     if (!Prisma.Decimal.isDecimal(amount)) {
-      const error = new Error(`createTransaction is called with Amount of type NOT
+      const error = new Error(`registerMoneyTransfer is called with Amount of type NOT
       DECIMAL value must be of type Decimal`);
       logger.error(`Programming error: ${JSON.stringify(error)}`);
       throw error;
