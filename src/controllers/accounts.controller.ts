@@ -1,25 +1,25 @@
-import { Request, Response } from 'express-serve-static-core';
+import { Request, Response, ParamsDictionary, Query } from 'express-serve-static-core';
 import * as accountService from '../services/accounts.service';
 import {
   incrementTimesBalanceShownToUserToday
 } from '../services/functionalLimitsTracker.service'
-import { TransactionT } from '../types';
+import { TransactionT, CreateAccountReqParams, CreateAccountReqQuery } from '../types';
 import logger from '../utils/logger';
 import { PRISMA_VALIDATION_ERROR, FOREIGN_KEY_CONSTRAINT_FAILED } from '../constants'
 
+type CreateAccountRequestParams = ParamsDictionary & CreateAccountReqParams;
+type CreateAccountRequestQuery = Query & CreateAccountReqQuery;
 
-// ! TODO: who can create accoun for a user???
-// for example, pietia CANNOT create account for vasia!
-// some kind of SUPERUSER?
+
 export const createAccount = async (req: Request, res: Response) => {
-  const { params: { userId }, query: { accountType = 'dibit' } } = req;
+  const { userId } = req.params as CreateAccountRequestParams;
+  const { accountType } = req.query as CreateAccountRequestQuery;
   logger.debug(`Create ${accountType} account for userId ${userId}`);
+  logger.debug(`Typeof accountType ${typeof accountType}; typeof userId ${typeof userId}`);
 
   try {
-    const parsedUserId = parseInt(userId);
-    const { accountId } = accountType === 'debit'
-      ? await accountService.createDebitAccount(parsedUserId)
-      : await accountService.createCreditAccount(parsedUserId);
+    const validatedAccountType = accountType;
+    const accountId = await accountService.createAccount(validatedAccountType, userId);
 
     res.status(201).json({
       accountId: accountId,
@@ -27,7 +27,7 @@ export const createAccount = async (req: Request, res: Response) => {
   } catch (e) {
     logger.error(`Failed to createAccount for userId ${userId}`);
 
-    if (
+    if (// TODO: 500
       e instanceof Error && e.message === FOREIGN_KEY_CONSTRAINT_FAILED ||
       e instanceof Error && e.message === PRISMA_VALIDATION_ERROR) {
       res.sendStatus(400);

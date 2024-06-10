@@ -16,12 +16,16 @@ export interface TransactionT {
   transactionDate: Date;
 }
 
-export type AccountType = 0 | 1;
+/**
+ * 0 means 'debit'
+ * 1 means 'credit'
+ */
+export type AccountTypeT = 0 | 1;
 
 export interface CreateAccountT {
   personId: number,
   dailyWithdrawalLimit: number,
-  accountType: AccountType,
+  accountType: AccountTypeT,
 }
 
 export interface AccountT {
@@ -32,4 +36,11 @@ export interface AccountT {
   active: boolean;
   account_type: number;
   create_date: Date;
+}
+
+export interface CreateAccountReqParams {
+  userId: number;
+}
+export interface CreateAccountReqQuery {
+  accountType: AccountTypeT;
 }
