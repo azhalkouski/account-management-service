@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import Decimal from 'decimal.js';
 import {
   CreateUserT,
   User,
@@ -20,13 +20,13 @@ abstract class AbstractDBService {
 
   abstract findAccountByIdOrThrow(id: number): Promise<AccountT>;
 
-  abstract getAccountBalance(accountId: number): Promise<Prisma.Decimal>;
-  abstract updateAccountBalance(accountId: number, newBalance: Prisma.Decimal): void;
+  abstract getAccountBalance(accountId: number): Promise<Decimal>;
+  abstract updateAccountBalance(accountId: number, newBalance: Decimal): void;
 
-  abstract registerMoneyTransfer(from: number, to: number, value: Prisma.Decimal): Promise<{ transferId: number }>;
+  abstract registerMoneyTransfer(from: number, to: number, value: Decimal): Promise<{ transferId: number }>;
   abstract getTransactionsByAccountId(accountId: number): Promise<TransactionT[]>;
 
-  abstract doMoneyTransferTransaction(fromId: number, toId: number, amount: Prisma.Decimal): void;
+  abstract doMoneyTransferTransaction(fromId: number, toId: number, amount: Decimal): void;
 }
 
 export default AbstractDBService;
