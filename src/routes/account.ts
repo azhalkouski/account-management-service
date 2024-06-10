@@ -9,10 +9,12 @@ import {
   withdrawAmount
 } from '../controllers/accounts.controller';
 import isShowBalanceTodayBelowLimit from '../middlewares/isShowBalanceTodayBelowLimit.middleware';
+import validateAccountTypeQuery from '../middlewares/validateAccountTypeQuery.middleware';
+import validateUserIdParam from '../middlewares/validateUserIdParam.middleware';
 
 const accountRouter = Router();
 
-accountRouter.post('/create/:userId', createAccount);
+accountRouter.post('/create/:userId', validateUserIdParam,  validateAccountTypeQuery, createAccount);
 
 accountRouter.get('/:accountId/balance', isShowBalanceTodayBelowLimit, getAccountBalance);
 accountRouter.post('/:accountId/deposit', depositAmount);
