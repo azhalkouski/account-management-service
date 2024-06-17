@@ -1,4 +1,5 @@
 import express from 'express';
+import { Request, Response, NextFunction } from 'express-serve-static-core';
 import passport from 'passport';
 import cors from 'cors';
 import checkAuthenticationMiddleware from './middlewares/checkAuthentication.middleware';
@@ -21,12 +22,18 @@ app.use(cors(corsOptions));
 app.use(checkAuthenticationMiddleware(whiteListUrls));
 app.use("/api/v1", routes);
 
-app.get('/', (req, res) => {
-  logger.info('index route requested');
+/**
+ * Log error
+ * Send response
+ * 
+ * From API security perspective, send 500 in all cases.
+ * Don't help others discover api implementations by means of our
+ * friendly error messages and status codes.
+ */
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  logger.error(err);
 
-  res.json({
-    message: 'Welcome to white listed'
-  });
+  res.sendStatus(500);
 });
 
 
