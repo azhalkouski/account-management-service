@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { Prisma } from '@prisma/client';
 import { createUserSchema, userSchema } from "../models/validation";
 
@@ -44,3 +45,5 @@ export interface CreateAccountReqParams {
 export interface CreateAccountReqQuery {
   accountType: AccountTypeT;
 }
+
+export type MiddlewareFunctionT = (req: Request, res: Response, next: NextFunction) => void;
