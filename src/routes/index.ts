@@ -1,16 +1,16 @@
 import { Router } from 'express';
-import { getUsers } from '../controllers/users.controller';
+
 import accountRouter from './account';
 import authRouter from './auth';
 import paymentRouter from './payment';
+import usersRouter from './users';
 
 const router = Router();
 
 router.use('/auth', authRouter);
 router.use('/account', accountRouter);
 router.use('/payment', paymentRouter);
-
-router.get('/users', getUsers);
+router.use('/users', usersRouter);
 
 
 export default router;

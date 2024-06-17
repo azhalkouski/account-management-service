@@ -1,111 +1,72 @@
-import { PrismaClient } from '@prisma/client';
-import { TransactionT } from '../types';
+import { Prisma } from '@prisma/client';
+import { TransactionT, AccountTypeT } from '../types';
+import prismaDBService from './db/prismaDB.service';
 
 const DEBIT_ACCOUNT_TYPE_ID = 0;
 const CREDIT_ACCOUNT_TYPE_ID = 1;
 
-type AccountType = 0 | 1;
 
 /**
- * ?accoutType=debit&currency=byn
+ * 
+ * @param accountType 0 means 'credit', 1 means 'debit'
+ * @param userId number
+ * @returns accountId - number
  */
-export const createDebitAccount = async (userId: number) => {
+// ! TODO: who can create accoun for a user???
+// for example, pietia CANNOT create account for vasia!
+// some kind of SUPERUSER?
+export const createAccount = async (accountType: AccountTypeT, userId: number) => {
+  if (accountType !== 0 && accountType !== 1) {
+    // throw new ValidationException();
+    throw new Error('Invalid accountType');
+  }
+ 
+  const { accountId } = accountType === 0
+    ? await _createDebitAccount(userId)
+    : await _createCreditAccount(userId);
+
+  return accountId;
+}
+
+export const getAccountBalance = async (accountId: number): Promise<Prisma.Decimal> => {
+  const balance = await prismaDBService.getAccountBalance(accountId);
+  return balance;
+}
+
+export const getAccountTransactions = async (accountId: number): Promise<TransactionT[]> => {
+  const transactions = await prismaDBService.getTransactionsByAccountId(accountId);
+
+  return transactions;
+}
+
+export const blockAccount = async (accountId: number) => {
+  await prismaDBService.blockAccount(accountId);
+};
+
+export const activateAccount = async (accountId: number) => {
+  await prismaDBService.activateAccount(accountId);
+};
+
+export const _createDebitAccount = async (userId: number) => {
   const debitAccount = await _createAccount(userId, DEBIT_ACCOUNT_TYPE_ID);
   return debitAccount;
 };
 
-export const createCreditAccount = async (userId: number) => {
+export const _createCreditAccount = async (userId: number) => {
   const creditAccount = await _createAccount(userId, CREDIT_ACCOUNT_TYPE_ID);
   return creditAccount;
 };
 
-  export const getAccountBalance = async (accountId: number): Promise<number> => {
-    console.log('accountService::getAccountBalance');
-  
-    const prisma = new PrismaClient();
-  
-  const decimalBalance = await prisma.account.findFirstOrThrow({
-    where: {
-      id: accountId
-    },
-    select: {
-      balance: true
-    }
-  });
-
-  const numberBalance: number = decimalBalance.balance.toNumber();
-
-  return numberBalance;
-}
-
-export const getAccountTransactions = async (accountId: number): Promise<TransactionT[]> => {
-  const prisma = new PrismaClient();
-
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      accounts: {
-        some: {
-          id: accountId
-        }
-      }
-    }
-  });
-
-  const adaptedTransaction: TransactionT[] = transactions.map((t) => {
-    const { transaction_date, ...restT } = t;
-    return {
-      ...restT,
-      value: Number(t.value),
-      transactionDate: transaction_date
-    };
-  })
-
-  return adaptedTransaction;
-}
-
-export const updateAccountBalance = async (accountId: number, newBalance: number) => {
-  const prisma = new PrismaClient();
-
-  await prisma.account.update({
-    where: { id: accountId },
-    data: { balance: newBalance }
-  });
-}
-
-export const blockAccount = async (accountId: number) => {
-  console.log('blockAccount');
-  const prisma = new PrismaClient();
-
-  await prisma.account.update({
-    where: { id: accountId },
-    data: { active: false }
-  });
-};
-
-export const activateAccount = async (accountId: number) => {
-  console.log('activateAccount');
-  const prisma = new PrismaClient();
-
-  await prisma.account.update({
-    where: { id: accountId },
-    data: { active: true }
-  });
-};
-
-export const _createAccount = async (userId: number, accountType: AccountType) => {
-  const prisma = new PrismaClient();
-
+export const _createAccount = async (userId: number, accountType: AccountTypeT): Promise<{ accountId: number }> => {
   const newAccount = {
-    person_id: userId,
-    daily_withdrawal_limit: 100,
-    account_type: accountType,
+    personId: userId,
+    dailyWithdrawalLimit: 100,
+    accountType: accountType,
   };
 
-  const createdAccount = await prisma.account.create({
-    data: newAccount
-  });
+  const account = await prismaDBService.createAccount(newAccount);
 
-  return createdAccount;
+  return account;
 };
 
 export const isDebitAccount = (account_type: number) => {

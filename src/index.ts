@@ -1,4 +1,5 @@
 import express from 'express';
+import { Request, Response, NextFunction } from 'express-serve-static-core';
 import passport from 'passport';
 import cors from 'cors';
 import checkAuthenticationMiddleware from './middlewares/checkAuthentication.middleware';
@@ -6,6 +7,8 @@ import dotenv from 'dotenv';
 import routes from './routes';
 import { whiteListUrls } from './constants';
 import corsOptions from './configs/cors.config';
+import logger from './utils/logger';
+import BaseException from './models/BaseException';
 
 dotenv.config();
 
@@ -17,24 +20,29 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(cors(corsOptions));
 
-//TODO: windson for logging
-// switch on/off debug mode via .env
 app.use(checkAuthenticationMiddleware(whiteListUrls));
 app.use("/api/v1", routes);
 
-app.get('/auth/login', passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.send('Welcome to the accounts management api!');
-});
+/**
+ * Log error
+ * Send response
+ * 
+ * From API security perspective, send 500 in all cases.
+ * Don't help others discover api implementations by means of our
+ * friendly error messages and status codes.
+ */
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to white listed'
-  });
-});
+  if (err instanceof BaseException) {
+    const { name, message, stack } = err;
+    logger.error(`ErrorName: ${name}; message: ${message}; stack: ${stack}`);
 
-app.get('/protected', (req, res) => {
-  console.log('req.user', req.user);
-  res.send('Welcome to protected!');
+    return res.sendStatus(err.statusCode);
+  }
+
+  logger.error(err);
+
+  res.sendStatus(500);
 });
 
 

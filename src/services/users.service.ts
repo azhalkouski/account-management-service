@@ -1,99 +1,33 @@
-import { PrismaClient } from '@prisma/client';
-
-import { CreateUserT, User, UserShortcutT, PublicUser } from '../types/index';
+import prismaDBService from './db/prismaDB.service';
+import { CreateUserT, User } from '../types/index';
 import { comparePassword } from '../utils';
+import { PublicUser } from '../types/index';
+
+/**
+ * Database related errors are NOT caught on this level.
+ * Database related errors are caught, logged, populated with ERROR_TYPE
+ * and thrown further
+ * Database related errors are caught on CONTROLLER LEVEL and appropriate
+ * responses are sent to clients
+ * 
+ * Error related to business logic which UsersService directly concerned with
+ * ARE CAUGHT on this level, logged, populated if needed and thrown further to
+ * the CONTROLLER LEVEL
+ */
 
 export const createUser = async (userData: CreateUserT): Promise<number> => {
-  const prisma = new PrismaClient();
-
-  const { id } = await prisma.user.create({ data: userData });
-
+  const id: number = await prismaDBService.createUser(userData);
   return id;
-}
-
-export const findUserByEmailAndPassword = async (email: string, password: string): Promise<UserShortcutT | null> => {
-  const prisma = new PrismaClient();
-
-  const user: User | null = await prisma.user.findFirst({
-    where: {
-      email: email,
-    },
-  });
-
-  if (!user) {
-    return null;
-  }
-
-  const isPasswordMatch = comparePassword(password, user.password);
-  if (!isPasswordMatch) {
-    return null;
-  }
-
-  const UserShortcut: UserShortcutT = {
-    id: user.id.toString(),
-    email: user.email
-  };
-
-  return UserShortcut;
 };
 
-export const getAllUsers = async (): Promise<PublicUser[]> => {
-  const prisma = new PrismaClient();
-  const allUsers: PublicUser[] = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      document: true,
-      birth_date: true
-    }
-  });
+export const isUserCredentialsMatch = async (email: string, password: string): Promise<boolean> => {
+  const user: User | null = await prismaDBService.findUserByEmail(email);
 
+  return !!user && comparePassword(password, user.password);
+};
 
+export const findAllUsers = async (): Promise<PublicUser[]> => {
+  const allUsers: PublicUser[] = await prismaDBService.findAllUsers();
 
   return allUsers;
 }
-
-export const findUserByUserId = async (id: number) => {
-  const prisma = new PrismaClient();
-  const user: PublicUser | null = await prisma.user.findFirst({
-    where: {
-      id: id,
-    },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      document: true,
-      birth_date: true
-    }
-  });
-
-  if (!user) {
-    return null;
-  }
-
-  return user;
-};
-
-export const findUserByEmail = async (email: string) => {
-  const prisma = new PrismaClient();
-  const user: PublicUser | null = await prisma.user.findFirst({
-    where: {
-      email: email,
-    },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      document: true,
-      birth_date: true
-    }
-  });
-
-  if (!user) {
-    return null;
-  }
-
-  return user;
-};

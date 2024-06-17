@@ -14,35 +14,22 @@ export const comparePassword = (plain: string, hashed: string) => {
   return bcrypt.compareSync(plain, hashed);
 };
 
-export const getJWTSecret = () => {
-  const secret = process.env.JWT_SECRET;
+export const getJWTSecret = () => (_extractEnvVarWithPocessExit('JWT_SECRET'));
+export const getWorkingDataDirPath =() => ( _extractEnvVarWithPocessExit('WORKING_DATA_DIR'));
+export const getCORSWhiteList = () => (_extractEnvVarWithPocessExit('CORS_WHITE_LIST'));
+export const getLoggerLevel = () => (_extractEnvVarWithPocessExit('LOGGER_LEVEL'));
 
-  if (!secret) {
-    console.error("Missing JWT secret");
+
+//
+// PRIVATE
+//
+function _extractEnvVarWithPocessExit(envVarName: string) {
+  const envVar = process.env[envVarName];
+
+  if (!envVar) {
+    console.error(`Missing ${envVarName}`);
     process.exit(1);
   };
 
-  return secret;
-};
-
-export const getWorkingDataDirPath = () => {
-  const workingDataDir = process.env.WORKING_DATA_DIR;
-
-  if (!workingDataDir) {
-    console.error("Missing WORKING_DATA_DIR");
-    process.exit(1);
-  };
-
-  return workingDataDir;
-};
-
-export const getCORSWhiteList = () => {
-  const corsWhiteList = process.env.CORS_WHITE_LIST;
-
-  if (!corsWhiteList) {
-    console.error("Missing CORS_WHITE_LIST");
-    process.exit(1);
-  };
-
-  return corsWhiteList;
-};
+  return envVar;
+}
