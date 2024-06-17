@@ -8,6 +8,7 @@ import routes from './routes';
 import { whiteListUrls } from './constants';
 import corsOptions from './configs/cors.config';
 import logger from './utils/logger';
+import BaseException from './models/BaseException';
 
 dotenv.config();
 
@@ -31,6 +32,14 @@ app.use("/api/v1", routes);
  * friendly error messages and status codes.
  */
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+
+  if (err instanceof BaseException) {
+    const { name, message, stack } = err;
+    logger.error(`ErrorName: ${name}; message: ${message}; stack: ${stack}`);
+
+    return res.sendStatus(err.statusCode);
+  }
+
   logger.error(err);
 
   res.sendStatus(500);
