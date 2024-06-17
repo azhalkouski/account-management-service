@@ -12,6 +12,7 @@ import {
   FOREIGN_KEY_CONSTRAINT_FAILED,
   NOT_FOUND_IN_DATABASE
 } from '../../constants';
+import DatabaseException from '../../models/DatabaseException';
 
 /**
  * Handles the following errors:
@@ -38,9 +39,11 @@ const withPrismaErrorHandlers =  async <T>(algorithm: () => Promise<T>): Promise
   } catch (e) {
 
     if (isPrismaClientInitializationError(e)) {
-      const originalError = JSON.stringify(e);
-      logger.error(`PRISMA::failed to INITIALIZE::error: ${originalError}`);
-      const customError = new Error(PRISMA_CLIENT_INITIALIZATION_ERROR);
+      const stack = JSON.stringify(e.stack);
+
+      const customError = new DatabaseException(
+        PRISMA_CLIENT_INITIALIZATION_ERROR, stack
+      );
       throw customError;
     }
 
