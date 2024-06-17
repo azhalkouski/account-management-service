@@ -1,6 +1,7 @@
 import prismaDBService from './db/prismaDB.service';
 import { CreateUserT, User } from '../types/index';
 import { comparePassword } from '../utils';
+import { PublicUser } from '../types/index';
 
 /**
  * Database related errors are NOT caught on this level.
@@ -24,3 +25,9 @@ export const isUserCredentialsMatch = async (email: string, password: string): P
 
   return !!user && comparePassword(password, user.password);
 };
+
+export const findAllUsers = async (): Promise<PublicUser[]> => {
+  const allUsers: PublicUser[] = await prismaDBService.findAllUsers();
+
+  return allUsers;
+}
