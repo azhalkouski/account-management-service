@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { accountTypeSchema } from '../models/validation';
 import ValidationException from '../models/ValidationException';
-
-const INVALID_ACCOUNT_TYPE = 'Invalid account type from req.query';
+import { INVALID_ACCOUNT_TYPE } from '../constants'
 
 const validateAccountTypeQuery = (req: Request, res: Response, next: NextFunction) => {
   const { query: { accountType } } = req;

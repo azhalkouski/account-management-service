@@ -3,6 +3,7 @@ export const EMAIL_NOT_VALID = 'Email invalid.';
 export const PASSWORD_NOT_VALID = 'Password invalid.';
 export const ACCOUNT_ID_NOT_VALID = "Account ID is invalied."
 export const MONEY_AMOUNT_NOT_VALID = 'Money amount is invalid.'
+export const INVALID_ACCOUNT_TYPE = 'Invalid account type';
 
 // TRANSACTIONS ERRORS
 export const MAKE_TRANSACTION_ERROR_TYPE = 'MAKE_TRANSACTION_ERROR_TYPE';
