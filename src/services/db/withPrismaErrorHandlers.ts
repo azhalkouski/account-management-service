@@ -12,7 +12,11 @@ import {
   FOREIGN_KEY_CONSTRAINT_FAILED,
   NOT_FOUND_IN_DATABASE
 } from '../../constants';
-import DatabaseException from '../../models/DatabaseException';
+import {
+  getDBExceptionInstance,
+  getDBExceptionInstanceWithDetails,
+  getViolatedConstraintsText
+} from '../../utils/db';
 
 /**
  * Handles the following errors:
@@ -39,50 +43,50 @@ const withPrismaErrorHandlers =  async <T>(algorithm: () => Promise<T>): Promise
   } catch (e) {
 
     if (isPrismaClientInitializationError(e)) {
-      const stack = JSON.stringify(e.stack);
+      const exception = getDBExceptionInstance(PRISMA_CLIENT_INITIALIZATION_ERROR, e);
 
-      const customError = new DatabaseException(
-        PRISMA_CLIENT_INITIALIZATION_ERROR, stack
-      );
-      throw customError;
+      throw exception;
     }
 
     if (isPrismaClientValidationError(e)) {
-      const originalError = JSON.stringify(e);
-      logger.error(`PRISMA::VALIDATION error::error: ${originalError}`);
-      const customError = new Error(PRISMA_VALIDATION_ERROR);
-      throw customError;
+      // * when prisma expected a sting but got a number
+      const exception = getDBExceptionInstance(PRISMA_VALIDATION_ERROR, e);
+
+      throw exception;
     }
 
     if (isPrismaClientKnownRequestError(e) && e.code === 'P2002') {
       // * P2002 is an error when the Unique constraint failed
       const violatedConstraints = JSON.stringify(e.meta);
-      logger.error(`PRISMA::Unique CONSTRAINT failed::error: ${violatedConstraints}`);
-      const customError = new Error(UNIQUE_CONSTRAINT_FAILED);
-      throw customError;
+      const details = getViolatedConstraintsText(violatedConstraints);
+      const exception = getDBExceptionInstanceWithDetails(UNIQUE_CONSTRAINT_FAILED, e, details);
+
+      throw exception;
     }
 
     if (isPrismaClientKnownRequestError(e) && e.code === 'P2003') {
       // * P2003 is an error when the Foreign Key constraint failed
       const violatedConstraints = JSON.stringify(e.meta);
-      logger.info(`PRISMA::Foreign Key CONSTRAINT failed::error: ${violatedConstraints}`);
-      const customError = new Error(FOREIGN_KEY_CONSTRAINT_FAILED);
-      throw customError;
+      const details = getViolatedConstraintsText(violatedConstraints);
+      const exception = getDBExceptionInstanceWithDetails(
+        FOREIGN_KEY_CONSTRAINT_FAILED, e, details
+      );
+
+      throw exception;
     }
 
     if (isPrismaClientNotFoundError(e) && e.code === 'P2025') {
       // * P2025 means NOT FOUND
-      const originalError = JSON.stringify(e);
-      logger.info(`PRISMA::NOT FOUND::error: ${originalError}`);
-      const customError = new Error(NOT_FOUND_IN_DATABASE);
-      throw customError;
+      const exception = getDBExceptionInstance(NOT_FOUND_IN_DATABASE, e);
+      throw exception;
     }
 
     /**
-       * If we've reached this point, then obviously we have no idea what just happened.
-       * This should be handled as 500 error
-       */
+     * If we've reached this point, then obviously we have no idea what just happened.
+     * This should be handled as 500 error
+     */
     const stringError = JSON.stringify(e);
+
     logger.error(`Something UNEXPECTED happened at the Prisma level: ${stringError}`);
     throw e;
   }
