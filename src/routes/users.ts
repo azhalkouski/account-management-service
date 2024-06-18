@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { getUsers } from '../controllers/users.controller';
-import withErrorHandling from '../middlewares/withErrorHandling.middleware';
+import withAsyncErrorHandling from '../middlewares/withAsyncErrorHandling.middleware';
 
 const usersRouter = Router();
 
-usersRouter.get('/', withErrorHandling(getUsers));
+usersRouter.get('/', withAsyncErrorHandling(getUsers));
 
 export default usersRouter;
