@@ -14,7 +14,7 @@ import validateUserIdParam from '../middlewares/validateUserIdParam.middleware';
 
 const accountRouter = Router();
 
-accountRouter.post('/create/:userId', validateUserIdParam,  validateAccountTypeQuery, createAccount);
+accountRouter.post('/create/:userId', validateUserIdParam, validateAccountTypeQuery, createAccount);
 
 accountRouter.get('/:accountId/balance', isShowBalanceTodayBelowLimit, getAccountBalance);
 accountRouter.post('/:accountId/deposit', depositAmount);
