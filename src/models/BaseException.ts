@@ -2,8 +2,9 @@ class BaseException extends Error {
   name = 'BaseException';
   statusCode = 500;
   stack: string;
+  details?: string;
 
-  constructor(stack: string) {
+  constructor(stack: string, details?: string) {
     // I need to call super() to ensure the prototype chain is correctly established.
     // This allows instances of my custom error class to be recognized as
     // instances of Error.
@@ -12,6 +13,7 @@ class BaseException extends Error {
     super();
     this.message = `This is a base exception message. You should override this in your subclass.`;
     this.stack = stack;
+    this.details = details;
   }
 }
 
