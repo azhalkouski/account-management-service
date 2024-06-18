@@ -4,6 +4,7 @@ import {
   PASSWORD_NOT_VALID
 } from '../constants';
 import { emailSchema, passwordSchema } from '../models/validation';
+import ValidationException from '../models/ValidationException';
 
 const validateCredentials = (req: Request, res: Response, next: NextFunction) => {
   const { body: { email, password } } = req;
@@ -11,20 +12,8 @@ const validateCredentials = (req: Request, res: Response, next: NextFunction) =>
   const { error: emailError } = emailSchema.safeParse(email);
   const { error: passwordError } = passwordSchema.safeParse(password);
 
-  if (emailError) {
-    return res.status(400).json({
-      massage: {
-        email: EMAIL_NOT_VALID
-      }
-    });
-  }
-
-  if (passwordError) {
-    return res.status(400).json({
-      massage: {
-        password: PASSWORD_NOT_VALID
-      }
-    });
+  if (emailError || passwordError) {
+    throw new ValidationException(`${EMAIL_NOT_VALID} OR ${PASSWORD_NOT_VALID}`);
   }
 
   next();

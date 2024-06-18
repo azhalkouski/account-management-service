@@ -5,6 +5,7 @@ import {
   MONEY_AMOUNT_NOT_VALID
 } from '../constants';
 import { accountIdSchema, unsignedMoneyAmountSchema } from '../models/validation';
+import ValidationException from '../models/ValidationException';
 
 const validateMakePaymentPayload = (req: Request, res:Response, next: NextFunction) => {
   const { body: { sourceAccountId, destinationAccountId, amount } } = req;
@@ -19,21 +20,11 @@ const validateMakePaymentPayload = (req: Request, res:Response, next: NextFuncti
   const { error: amountError } = unsignedMoneyAmountSchema.safeParse(amount);
 
   if (sourceAccountIdError || destinationAccountIdError) {
-    return res.status(400).json({
-      type: MAKE_TRANSACTION_ERROR_TYPE,
-      message: {
-        email: ACCOUNT_ID_NOT_VALID
-      }
-    });
+    throw new ValidationException(`${MAKE_TRANSACTION_ERROR_TYPE} - ${ACCOUNT_ID_NOT_VALID}`);
   }
 
   if (amountError) {
-    return res.status(400).json({
-      type: MAKE_TRANSACTION_ERROR_TYPE,
-      message: {
-        email: MONEY_AMOUNT_NOT_VALID
-      }
-    });
+    throw new ValidationException(`${MAKE_TRANSACTION_ERROR_TYPE} - ${MONEY_AMOUNT_NOT_VALID}`);
   }
 
   next();
