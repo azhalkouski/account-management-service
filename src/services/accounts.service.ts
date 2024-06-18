@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { TransactionT, AccountTypeT } from '../types';
 import prismaDBService from './db/prismaDB.service';
+import { INVALID_ACCOUNT_TYPE } from '../constants'
+import ValidationException from '../models/ValidationException';
 
 const DEBIT_ACCOUNT_TYPE_ID = 0;
 const CREDIT_ACCOUNT_TYPE_ID = 1;
@@ -17,8 +19,7 @@ const CREDIT_ACCOUNT_TYPE_ID = 1;
 // some kind of SUPERUSER?
 export const createAccount = async (accountType: AccountTypeT, userId: number) => {
   if (accountType !== 0 && accountType !== 1) {
-    // throw new ValidationException();
-    throw new Error('Invalid accountType');
+    throw new ValidationException(INVALID_ACCOUNT_TYPE);
   }
  
   const { accountId } = accountType === 0
