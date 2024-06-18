@@ -4,8 +4,8 @@ class DatabaseException extends BaseException {
   name = 'DatabaseException';
   message = "Exception occured at the database level."
 
-  constructor(message: string, stack: string, details?: string) {
-    super(stack, details);
+  constructor(message: string, priorErrorStack: string, details?: string) {
+    super(message, priorErrorStack, details);
     this.message = message;
   }
 }
