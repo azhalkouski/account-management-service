@@ -16,7 +16,7 @@ const isShowBalanceTodayBelowLimit = (req: Request, res: Response, next: NextFun
 
     if (times >= BALANCE_LOOKUP_DAILY_LIMIT) {
       logger.info(`Exceeded daily limit of showAccountBalance for accountId=${accountId}`)
-      throw new BaseException(`Exceeded daily limit of showAccountBalance for accountId=${accountId}`);
+      throw new BaseException(`Exceeded daily limit of showAccountBalance for accountId=${accountId}`, null, null);
     }
 
     next();

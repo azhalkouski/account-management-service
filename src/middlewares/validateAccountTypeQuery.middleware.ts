@@ -9,7 +9,7 @@ const validateAccountTypeQuery = (req: Request, res: Response, next: NextFunctio
   const { error: accountTypeError } = accountTypeSchema.safeParse(accountType);
 
   if (accountTypeError !== undefined) {
-    throw new ValidationException(INVALID_ACCOUNT_TYPE);
+    throw new ValidationException(INVALID_ACCOUNT_TYPE, null, null);
   }
 
 }

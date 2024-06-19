@@ -1,10 +1,9 @@
-import BaseException from "./BaseException";
+import BaseException, { DetailsT } from "./BaseException";
 
 class DatabaseException extends BaseException {
   name = 'DatabaseException';
-  message = "Exception occured at the database level."
 
-  constructor(message: string, priorErrorStack: string, details?: string) {
+  constructor(message: string, priorErrorStack: string | null, details: DetailsT | null) {
     super(message, priorErrorStack, details);
     this.message = message;
   }
