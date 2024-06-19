@@ -39,6 +39,8 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
     return res.sendStatus(err.statusCode);
   }
+  console.log('err')
+  console.log(err)
 
   logger.error(err);
 

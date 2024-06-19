@@ -4,7 +4,7 @@ import {
   ACCOUNT_ID_NOT_VALID,
   MONEY_AMOUNT_NOT_VALID
 } from '../constants';
-import { accountIdSchema, unsignedMoneyAmountSchema } from '../models/validation';
+import { accountIdSchema, unsignedMoneyAmountSchema } from '../utils/validation';
 import ValidationException from '../models/ValidationException';
 
 const validateMakePaymentPayload = (req: Request, res:Response, next: NextFunction) => {

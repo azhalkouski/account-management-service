@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { Prisma } from '@prisma/client';
-import { createUserSchema, userSchema } from "../models/validation";
+import { createUserSchema, userSchema } from "../utils/validation";
 
 export type CreateUserT = z.infer<typeof createUserSchema>;
 

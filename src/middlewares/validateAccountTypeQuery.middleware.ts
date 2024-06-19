@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express-serve-static-core';
-import { accountTypeSchema } from '../models/validation';
+import { accountTypeSchema } from '../utils/validation';
 import ValidationException from '../models/ValidationException';
 import { INVALID_ACCOUNT_TYPE } from '../constants'
 

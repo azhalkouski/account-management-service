@@ -3,7 +3,7 @@ import {
   EMAIL_NOT_VALID,
   PASSWORD_NOT_VALID
 } from '../constants';
-import { emailSchema, passwordSchema } from '../models/validation';
+import { emailSchema, passwordSchema } from '../utils/validation';
 import ValidationException from '../models/ValidationException';
 
 const validateCredentials = (req: Request, res: Response, next: NextFunction) => {
