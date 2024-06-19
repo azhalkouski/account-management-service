@@ -10,7 +10,7 @@ const validateUserIdParam = (req: Request, res: Response, next: NextFunction) =>
   const { error: userIdError } = zod.number().safeParse(userId);
 
   if (userIdError !== undefined) {
-    throw new ValidationException(INVALID_USER_ID_PARAM);
+    throw new ValidationException(INVALID_USER_ID_PARAM, null, null);
   }
 
   next();

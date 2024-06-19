@@ -19,7 +19,7 @@ const CREDIT_ACCOUNT_TYPE_ID = 1;
 // some kind of SUPERUSER?
 export const createAccount = async (accountType: AccountTypeT, userId: number) => {
   if (accountType !== 0 && accountType !== 1) {
-    throw new ValidationException(INVALID_ACCOUNT_TYPE);
+    throw new ValidationException(INVALID_ACCOUNT_TYPE, null, null);
   }
  
   const { accountId } = accountType === 0

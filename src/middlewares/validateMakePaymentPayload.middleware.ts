@@ -20,11 +20,11 @@ const validateMakePaymentPayload = (req: Request, res:Response, next: NextFuncti
   const { error: amountError } = unsignedMoneyAmountSchema.safeParse(amount);
 
   if (sourceAccountIdError || destinationAccountIdError) {
-    throw new ValidationException(`${MAKE_TRANSACTION_ERROR_TYPE} - ${ACCOUNT_ID_NOT_VALID}`);
+    throw new ValidationException(`${MAKE_TRANSACTION_ERROR_TYPE} - ${ACCOUNT_ID_NOT_VALID}`, null, null);
   }
 
   if (amountError) {
-    throw new ValidationException(`${MAKE_TRANSACTION_ERROR_TYPE} - ${MONEY_AMOUNT_NOT_VALID}`);
+    throw new ValidationException(`${MAKE_TRANSACTION_ERROR_TYPE} - ${MONEY_AMOUNT_NOT_VALID}`, null, null);
   }
 
   next();
