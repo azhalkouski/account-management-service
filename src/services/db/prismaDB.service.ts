@@ -13,6 +13,8 @@ import {
 import logger from '../../utils/logger';
 import { isDebitAccount } from '../../services/accounts.service';
 import { INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR } from '../../constants';
+import BaseException from '../../models/BaseException';
+import InsufficientBalanceException from '../../models/InsufficientBalanceException';
 
 /**
  * ERROR HANDLING abstracted away into withPrismaErrorHandlers
@@ -227,10 +229,12 @@ class PrismaDBService extends AbstractDBService {
         } = await prismaDBService.findAccountByIdOrThrow(toId);
   
         if (isDebitAccount(sourceAccountType)) {
-          const err = new Error(`Only debit accounts payments are currently supported,
-          but got CREDIT ACCOUNT of id: ${fromId}`);
-          logger.error(`Error while making payment. Error: ${err}`);
-          throw err;
+          const exception = new BaseException(
+            `Only debit accounts payments are currently supported, but got CREDIT ACCOUNT of id: ${fromId}`,
+            null,
+            null
+          );
+          throw exception;
         }
   
         const newSourceBalance = new Decimal(sourceBalance).sub(amount);
@@ -238,10 +242,10 @@ class PrismaDBService extends AbstractDBService {
   
         // check if balance has required amount
         if (newSourceBalance.lessThan(0)){
-          const error = new Error(INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR);
-          logger.info(`Transaction failed due to error: ${JSON.stringify(error)}.
-          Insufficient amount on account with id: ${fromId}`);
-          throw error;
+          const exception = new InsufficientBalanceException(
+            INSUFFICIENT_AMOUNT_ON_ACCOUNT_ERROR, null, { accountId: fromId.toString() }
+          );
+          throw exception;
         }
 
         await prismaDBService.updateAccountBalance(fromId, newSourceBalance);
@@ -249,11 +253,17 @@ class PrismaDBService extends AbstractDBService {
 
         // record transaction
         await prismaDBService.registerMoneyTransfer(fromId, toId, amount);
+        // TODO: this.prismaClient.$disconnect();
       });
       // TRANSACTION END;
     } catch (e) {
-      console.error(`Transaction failed with error: ${e}`);
-      throw e;
+      const stack = e instanceof Error ? JSON.stringify(e.stack) : null;
+      const exception = new BaseException(
+        `Transaction failed with error: ${e}`,
+        stack,
+        null
+      );
+      throw exception;
     }
   }
 }
