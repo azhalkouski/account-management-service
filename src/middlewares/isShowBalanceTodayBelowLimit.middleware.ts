@@ -2,7 +2,9 @@ import { Request, Response, NextFunction } from 'express-serve-static-core';
 import {
   getTimesBalanceShownToUserToday
 } from '../services/functionalLimitsTracker.service';
+import logger from '../utils/logger';
 import { BALANCE_LOOKUP_DAILY_LIMIT } from '../constants'
+import BaseException from '../models/BaseException';
 
 
 const isShowBalanceTodayBelowLimit = (req: Request, res: Response, next: NextFunction) => {
@@ -13,8 +15,8 @@ const isShowBalanceTodayBelowLimit = (req: Request, res: Response, next: NextFun
     const times = getTimesBalanceShownToUserToday(parsedAccountId);
 
     if (times >= BALANCE_LOOKUP_DAILY_LIMIT) {
-      console.log(`Exceeded daily limit of showAccountBalance for accountId=${accountId}`)
-      return res.sendStatus(403);
+      logger.info(`Exceeded daily limit of showAccountBalance for accountId=${accountId}`)
+      throw new BaseException(`Exceeded daily limit of showAccountBalance for accountId=${accountId}`);
     }
 
     next();
@@ -22,9 +24,7 @@ const isShowBalanceTodayBelowLimit = (req: Request, res: Response, next: NextFun
     console.error(`System error while getTimesBalanceShownToUserToday.
     Most likely fs module interaction`, e);
 
-    // next() anyways. it is our fault that getTimesBalanceShownToUserToday failed
-    // let user see thier balance
-    next();
+    next(e);
   }
 };
 
